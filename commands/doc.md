@@ -136,6 +136,28 @@ If ${file} was empty/new, write the full skeleton with the single path inserted 
 ALWAYS use the write tool. Do NOT just display the content without writing it.
 
 --------------------------------------------------------------------------------
+DOCUMENTATION INDEX UPDATES (when ${file} is NEW or first endpoint in file):
+When creating a new YAML file (or adding the first endpoint to an empty file), you MUST also update the documentation index files:
+
+1. **docs/index.js**: Add the route mapping to the `routes` constant:
+   - Format: `'/<ScopeName>': "${file}"`
+   - Insert alphabetically within the existing routes object
+   - Use the exact scope name from the controller's `super(env, "scope")` call, capitalized appropriately
+
+2. **docs/index.html**: Add a navigation menu item:
+   - Add a new `<li class="nav-item">` entry in the sidebar navigation
+   - Format: `<a href="#/<ScopeName>" class="nav-link" aria-current="page"><ScopeName></a>`
+   - Insert alphabetically within the existing menu items
+   - Use the same scope name capitalization as in index.js
+
+3. **docs/index.html**: Increment the version query parameter:
+   - Update the script tag: `<script src="index.js?v=X.YY"></script>`
+   - Increment the version number (e.g., from `?v=1.16` to `?v=1.17`)
+   - This ensures browsers load the updated index.js file
+
+These updates ensure the new API documentation is accessible from the documentation sidebar and properly routed.
+
+--------------------------------------------------------------------------------
 SUCCESS CRITERIA CHECKLIST (self-verify before final output):
 [ ] Correct path & HTTP verb resolved from router registration of ${method}.
 [ ] Tag matches controller scope and is present in operation.
@@ -146,5 +168,8 @@ SUCCESS CRITERIA CHECKLIST (self-verify before final output):
 [ ] Reused or added schemas consistent with existing patterns.
 [ ] No unrelated sections modified.
 [ ] YAML syntactically valid & indented with 2 spaces.
+[ ] If ${file} is NEW: docs/index.js routes constant updated with new entry.
+[ ] If ${file} is NEW: docs/index.html navigation menu updated with new item.
+[ ] If ${file} is NEW: docs/index.html version query parameter incremented.
 
 END OF PROMPT SPEC.
