@@ -857,8 +857,9 @@ package.json:
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/main.ts",
-    "start:dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "start:dev": "tsx src/main.ts",
+    "start:watch": "tsx watch src/main.ts",
     "start-debug": "node --import tsx --inspect src/main.ts",
     "start-nodemon-debug": "nodemon --exec tsx --inspect src/main.ts",
     "test": "mocha 'test/**/*.test.ts' --require tsx/cjs",
@@ -925,16 +926,19 @@ TypeScript backend (Node.js, Express, ESM). Source under **src/**.
 2. Configure the application:
    - Copy or adapt `config/config.ts` and set database and service credentials.
 
-3. Start the server:
+3. Build and start the server:
    \`\`\`bash
+   npm run build
    npm start
    \`\`\`
-   (runs with **tsx**; no build step required for development.)
+   (Production: `npm start` runs `node dist/main.js`. Development: `npm run start:dev` runs **tsx** on `src/`.)
 
 ## Development
 
-- Build: `npm run build` (output in `dist/`)
-- Start with watch: `npm run start:dev`
+- Build: `npm run build` (output in `dist/`; do not edit `dist/` by hand)
+- Start (production): `npm start` (requires build)
+- Start (development): `npm run start:dev` (tsx)
+- Start with watch: `npm run start:watch`
 - Start with debug: `npm run start-debug`
 - Run tests: `npm test` or `npm run test:all` (Mocha + tsx/cjs for `.test.ts` files)
 ```
@@ -947,7 +951,9 @@ Output:
 Important Notes:
 - **TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"`). Run with **tsx** (or compile with `tsc` and run from `dist/`).
 - **Controller methods:** Use **private** method names **without** `__` (e.g. `login`, `logout`). Tests call them via `(controller as any).methodName(...)`.
-- **Imports:** Use **.js** extension in import paths for ESM resolution (e.g. `from "./app.js"`); tsx/Node resolve to `.ts` at runtime when needed.
+- **Imports:** Use **.js** extension in **every** relative import (e.g. `from "./app.js"`, `from "../lib/utils.js"`). TypeScript does not rewrite paths; Node ESM requires the extension when running `node dist/main.js`. Do **not** modify files in **dist/** (build output only).
+- **CommonJS dependencies:** If a package (e.g. exceljs) is CommonJS and triggers "Named export not found", use default import for values and `import type` for types: `import pkg from "exceljs";` `import type { Worksheet } from "exceljs";` `const { Workbook } = pkg;` Use `InstanceType<typeof Workbook>` for instance types when needed.
+- **Loading ESM config from outside src:** If `src/config/config.ts` loads a file at project root (e.g. `config/config.js`) that is ESM, do **not** use `createRequire` + `require()` (ERR_REQUIRE_ESM). Use dynamic import with pathToFileURL and top-level await: `import { pathToFileURL } from "url";` then `const configModule = await import(pathToFileURL(configPath).href);` and `configModule.default`.
 - Ensure all imports match the structure (src/, config/). The project should be runnable after `npm install` and config setup.
 - Create all paths relative to the workspace root. Replace **${projectName}** with the actual project name when creating files.
 - **Tests:** Use **.test.ts** and **`--require tsx/cjs`** in Mocha scripts (see refactor.md / test.md for conventions).
