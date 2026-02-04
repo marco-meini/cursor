@@ -122,7 +122,7 @@ export { App };
 src/environment.ts:
 ```typescript
 import { Logger, Mailer, MongoClienManager, PgClientManager, SessionMiddleware } from "common-mjs";
-import config from "../config/config.js";
+import config from "./config/config.js";
 import { PgModels } from "./model/postgres/pg-models.js";
 import { MongoModels } from "./model/mongo/mongo-models.js";
 
@@ -445,6 +445,62 @@ export { UsersModel };
 
 3) Configuration Files
 
+**Option A – Config in src (recommended for ESM):** Types and loader in `src/config/config.ts`; actual values in `config/config.js` at project root (so `dist/` contains only compiled `src/`, and `node dist/main.js` works). Use dynamic `import()` to load the root config (do not use `createRequire`/`require()` for ESM; see Important Notes).
+
+src/config/config.ts:
+```typescript
+import { pathToFileURL } from "url";
+import path from "path";
+import { fileURLToPath } from "url";
+
+export interface IConfig {
+  databases: {
+    postgres: { master: { database: string; user: string; password: string; host: string }; slave: { database: string; user: string; password: string; host: string } };
+    mongo: { dbconfig: string; options: { maxPoolSize: number } };
+  };
+  logLevel: number;
+  root: string;
+  defaultPort: number;
+  bodyParserLimit: string;
+  redisOptions: { url: string; password: string };
+  sessionCookie: { name: string; options: { sameSite: "none" | "lax" | "strict" } };
+  sessionHeaderName: string;
+  sessionExpiration: { short: number; long: number };
+  sparkpost: { api: string };
+}
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const configPath = path.join(__dirname, "..", "..", "config", "config.js");
+const configModule = await import(pathToFileURL(configPath).href);
+const config = configModule.default as IConfig;
+
+export default config;
+```
+
+config/config.js (at project root; not compiled; add to .gitignore if it contains secrets):
+```javascript
+export default {
+  databases: {
+    postgres: {
+      master: { database: "", user: "", password: "", host: "" },
+      slave: { database: "", user: "", password: "", host: "" }
+    },
+    mongo: { dbconfig: "", options: { maxPoolSize: 5 } }
+  },
+  logLevel: 3,
+  root: "/api/v2",
+  defaultPort: 9804,
+  bodyParserLimit: "50mb",
+  redisOptions: { url: "", password: "" },
+  sessionCookie: { name: "", options: { sameSite: "none" } },
+  sessionHeaderName: "",
+  sessionExpiration: { short: 7890000, long: 31536000 },
+  sparkpost: { api: "" }
+};
+```
+
+**Option B – Config only in config/ (simpler; then use `rootDir: "."`, include `config/**/*.ts`, and start with `node dist/src/main.js`):**
+
 config/config.ts:
 ```typescript
 const config = {
@@ -471,6 +527,7 @@ const config = {
 
 export default config;
 ```
+(With Option B, in environment.ts use `import config from "../config/config.js"` and set start to `node dist/src/main.js`.)
 
 4) Documentation Files
 
@@ -737,6 +794,8 @@ components:
 
 6) TypeScript Configuration
 
+Use **rootDir: "src"** and **include** only **src/** so that `dist/` contains only compiled source (e.g. `dist/main.js`), and `npm start` runs `node dist/main.js` without changing paths to config. Config is loaded at runtime from project root (Option A in section 3).
+
 tsconfig.json:
 ```json
 {
@@ -745,7 +804,7 @@ tsconfig.json:
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -754,10 +813,11 @@ tsconfig.json:
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "config/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test", "config"]
 }
 ```
+(If you use Option B for config, set `"rootDir": "."`, `"include": ["src/**/*.ts", "config/**/*.ts"]`, and in package.json set start to `"node dist/src/main.js"`.)
 
 7) Project Configuration Files
 
@@ -823,9 +883,10 @@ package-lock.json
 # dotenv environment variables file
 .env
 
-# configurations
+# configurations (config/config.js at root holds runtime values; ignore if it contains secrets)
 config/config.json
 config/config.ts
+config/config.js
 
 # TypeScript
 dist/
@@ -949,11 +1010,12 @@ Output:
 - All file paths should be relative to the workspace root (create the project structure directly in the current directory)
 
 Important Notes:
-- **TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"`). Run with **tsx** (or compile with `tsc` and run from `dist/`).
+- **TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"` in package.json) so that `node dist/main.js` runs correctly. Run in dev with **tsx** or compile with `tsc` and run from `dist/`.
+- **Never modify dist/:** Files in **dist/** are build output only; do not edit them. All path and ESM fixes are done in **src/** (e.g. `.js` in imports).
 - **Controller methods:** Use **private** method names **without** `__` (e.g. `login`, `logout`). Tests call them via `(controller as any).methodName(...)`.
-- **Imports:** Use **.js** extension in **every** relative import (e.g. `from "./app.js"`, `from "../lib/utils.js"`). TypeScript does not rewrite paths; Node ESM requires the extension when running `node dist/main.js`. Do **not** modify files in **dist/** (build output only).
+- **Imports:** Use **.js** extension in **every** relative import (e.g. `from "./app.js"`, `from "../lib/utils.js"`). TypeScript does not rewrite paths; Node ESM requires the extension when running `node dist/main.js`.
 - **CommonJS dependencies:** If a package (e.g. exceljs) is CommonJS and triggers "Named export not found", use default import for values and `import type` for types: `import pkg from "exceljs";` `import type { Worksheet } from "exceljs";` `const { Workbook } = pkg;` Use `InstanceType<typeof Workbook>` for instance types when needed.
-- **Loading ESM config from outside src:** If `src/config/config.ts` loads a file at project root (e.g. `config/config.js`) that is ESM, do **not** use `createRequire` + `require()` (ERR_REQUIRE_ESM). Use dynamic import with pathToFileURL and top-level await: `import { pathToFileURL } from "url";` then `const configModule = await import(pathToFileURL(configPath).href);` and `configModule.default`.
+- **Loading ESM config from outside src:** If `src/config/config.ts` loads a file at project root (e.g. `config/config.js`) that is ESM, do **not** use `createRequire` + `require()` (ERR_REQUIRE_ESM). Use dynamic import with pathToFileURL and top-level await: `import { pathToFileURL } from "url";` then `const configModule = await import(pathToFileURL(configPath).href);` and use `configModule.default`.
 - Ensure all imports match the structure (src/, config/). The project should be runnable after `npm install` and config setup.
 - Create all paths relative to the workspace root. Replace **${projectName}** with the actual project name when creating files.
 - **Tests:** Use **.test.ts** and **`--require tsx/cjs`** in Mocha scripts (see refactor.md / test.md for conventions).
