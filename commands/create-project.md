@@ -1,39 +1,42 @@
-Create a new backend Node.js project structure.
+Create a new backend Node.js project structure in **TypeScript**.
 
 Inputs:
 - ${projectName}: The name of the project (will be used as folder name and package.json name)
 
 Goals:
 - Create the complete project structure with all necessary files and folders
-- Generate skeleton files with proper content
-- Set up configuration files, documentation, and test structure
+- Generate skeleton files in **TypeScript** (`.ts`), ESM-compatible
+- Set up TypeScript config, documentation, and test structure (Mocha + tsx)
 
 Requirements:
 
 1) Directory Structure
 - Create the following directories:
-  - app/controllers/
-  - app/cronie/batch/
-  - app/lib/
-  - app/model/mongo/
-  - app/model/postgres/
+  - **src/** (source code; no `app/`)
+  - src/controllers/
+  - src/cronie/batch/
+  - src/lib/
+  - src/model/mongo/
+  - src/model/postgres/
   - config/
   - docs/
   - test/controllers/
   - test/lib/
-  - test/pg-models/
+  - test/model/postgres/ (or test/pg-models/)
   - .vscode/
 
 2) Core Application Files
 
-app/main.mjs:
-```javascript
-import { App } from "./app.mjs";
+**TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"`). Run with **tsx** (or compile with `tsc` and run `node dist/main.js`).
+
+src/main.ts:
+```typescript
+import { App } from "./app.js";
 
 const app = new App();
 let port = app.env.config.defaultPort;
 if (process.argv.length > 2) {
-  port = parseInt(process.argv[2]);
+  port = parseInt(process.argv[2], 10);
 }
 
 (async () => {
@@ -49,44 +52,39 @@ if (process.argv.length > 2) {
 })();
 
 process.on("beforeExit", async () => {
-  await app.env.pgConnection.disconnect()
+  await app.env.pgConnection.disconnect();
   app.env.mongoClient.disconnect();
 });
 ```
 
-app/app.mjs:
-```javascript
+src/app.ts:
+```typescript
 import { HttpResponseStatus } from "common-mjs";
 import cookieParser from "cookie-parser";
 import express, { json } from "express";
 import { join } from "path";
-import { Environment } from "./environment.mjs";
-import { AuthController } from "./controllers/auth.controller.mjs";
+import { Environment } from "./environment.js";
+import { AuthController } from "./controllers/auth.controller.js";
 
 class App {
+  env: Environment;
+  express: ReturnType<typeof express>;
+
   constructor() {
     this.env = new Environment();
     this.express = express();
     this.express.use(json({ limit: this.env.config.bodyParserLimit }));
     this.express.use(cookieParser());
 
-    this.express.use("/healthcheck", (request, response) => {
+    this.express.use("/healthcheck", (_request, response) => {
       response.send({ uptime: process.uptime() });
     });
 
     const auth = new AuthController(this.env);
-
     this.express.use(join(this.env.config.root, auth.route), auth.router);
-    
+
     this.express.use(
-      /**
-       *
-       * @param {any} error
-       * @param {import("common-mjs").SessionRequest} request
-       * @param {import("express").Response} response
-       * @param {import("express").NextFunction} next
-       */
-      (error, request, response, next) => {
+      (error: any, request: import("common-mjs").SessionRequest, response: import("express").Response, next: import("express").NextFunction) => {
         if (!error) {
           next();
         } else if (error.message === "unexpected end of file" || error.message === "Could not find MIME for Buffer <null>") {
@@ -98,10 +96,8 @@ class App {
           response.sendStatus(HttpResponseStatus.MISSING_PARAMS);
         } else {
           if (error.status && error.status !== HttpResponseStatus.SERVER_ERROR) {
-            if (error.errors && error.errors.length) {
-              let data = error.errors.map((item) => {
-                return item.message;
-              });
+            if (error.errors?.length) {
+              const data = error.errors.map((item: { message: string }) => item.message);
               response.status(error.status).send(data);
             } else if (error.status === HttpResponseStatus.MISSING_PARAMS) {
               response.status(error.status).send(error.message);
@@ -110,7 +106,7 @@ class App {
               response.sendStatus(error.status);
             }
           } else {
-            let token = request.token ? "JWT: " + request.token : "";
+            const token = request.token ? "JWT: " + request.token : "";
             this.env.logger.error(`[${request.method}]`, request.url, error.stack || error.message, token);
             response.sendStatus(HttpResponseStatus.SERVER_ERROR);
           }
@@ -123,55 +119,22 @@ class App {
 export { App };
 ```
 
-app/environment.mjs:
-```javascript
+src/environment.ts:
+```typescript
 import { Logger, Mailer, MongoClienManager, PgClientManager, SessionMiddleware } from "common-mjs";
-import config from "../config/config.mjs";
-import { PgModels } from "./model/postgres/pg-models.mjs";
-import { MongoModels } from "./model/mongo/mongo-models.mjs";
-
-/**
- * @typedef {Object} IConfig
- * @property {Object} databases
- * @property {Object} databases.postgres
- * @property {import("pg").PoolConfig} databases.postgres.master
- * @property {import("pg").PoolConfig} databases.postgres.slave
- * @property {Object} databases.mongo
- * @property {import("common-mjs").MongoDbConfig} databases.mongo.dbconfig
- * @property {import("mongodb").MongoClientOptions} [databases.mongo.options]
- * @property {number} logLevel
- * @property {number} defaultPort
- * @property {string} root
- * @property {string} bodyParserLimit
- * @property {import("redis").RedisClientOptions} redisOptions
- * @property {Object} sessionCookie
- * @property {string} sessionCookie.name
- * @property {import("express").CookieOptions} sessionCookie.options
- * @property {string} sessionHeaderName
- * @property {Object} sessionExpiration
- * @property {number} sessionExpiration.short
- * @property {number} sessionExpiration.long
- * @property {Object} sparkpost
- * @property {string} sparkpost.api
- */
+import config from "../config/config.js";
+import { PgModels } from "./model/postgres/pg-models.js";
+import { MongoModels } from "./model/mongo/mongo-models.js";
 
 class Environment {
-  /** @type {IConfig} */
-  config;
-  /** @type {Logger} */
-  logger;
-  /** @type {PgClientManager} */
-  pgConnection;
-  /** @type {PgModels} */
-  pgModels;
-  /** @type {SessionMiddleware} */
-  session;
-  /** @type {MongoClienManager} */
-  mongoClient;
-  /** @type {MongoModels} */
-  mongoModels;
-  /** @type {Mailer} */
-  mailManager;
+  config: typeof config;
+  logger: Logger;
+  pgConnection: PgClientManager;
+  pgModels: PgModels;
+  session: SessionMiddleware;
+  mongoClient: MongoClienManager;
+  mongoModels: MongoModels;
+  mailManager: Mailer;
 
   constructor() {
     this.config = config;
@@ -184,7 +147,7 @@ class Environment {
     this.mailManager = new Mailer(this.config.sparkpost.api);
   }
 
-  async initMongoModels() {
+  async initMongoModels(): Promise<void> {
     try {
       await this.mongoClient.connect();
       this.mongoModels.init();
@@ -198,90 +161,56 @@ class Environment {
 export { Environment };
 ```
 
-app/controllers/abstract.controller.mjs:
-```javascript
-import * as express from "express";
-import { Environment } from "../environment.mjs";
+src/controllers/abstract.controller.ts:
+```typescript
+import express from "express";
 import { join } from "path";
+import type { Environment } from "../environment.js";
 
-/**
- * @abstract
- */
-class Abstract_Controller {
-  /**
-   * @type {express.Router}
-   */
-  router;
-  /**
-   * @type {Environment}
-   */
-  env;
-  /**
-   * @type {string}
-   */
-  route;
-  /**
-   * @type {string}
-   * @protected
-   */
-  __filesPath;
 
-  /**
-   *
-   * @param {Environment} env
-   * @param {string} route
-   * @param {string} [folder]
-   */
-  constructor(env, route, folder) {
+abstract class Abstract_Controller {
+  router: express.Router;
+  env: Environment;
+  route: string;
+  protected filesPath?: string;
+
+  constructor(env: Environment, route: string, folder?: string) {
     this.env = env;
     this.route = route;
     this.router = express.Router();
-    if (folder) this.__filesPath = join(env.config.fileserver.root, env.config.fileserver.folders[folder]);
+    if (folder && (env.config as any).fileserver?.root && (env.config as any).fileserver?.folders?.[folder]) {
+      this.filesPath = join((env.config as any).fileserver.root, (env.config as any).fileserver.folders[folder]);
+    }
   }
 }
 
 export { Abstract_Controller };
 ```
 
-app/controllers/auth.controller.mjs:
-```javascript
+src/controllers/auth.controller.ts:
+```typescript
 import { HttpResponseStatus } from "common-mjs";
-import { Abstract_Controller } from "./abstract.controller.mjs";
+import type { Request, Response, NextFunction } from "express";
+import type { SessionRequest } from "common-mjs";
+import type { Environment } from "../environment.js";
+import { Abstract_Controller } from "./abstract.controller.js";
 
-/**
- * @typedef {Object} LoginData
- * @property {string} username - The username of the user.
- * @property {string} password - The password of the user.
- * @property {boolean} persistent - Whether the login session should be persistent.
- */
-
+/** Use real method names (no __ prefix). Tests call via (controller as any).login(...). */
 class AuthController extends Abstract_Controller {
-  constructor(env) {
+  constructor(env: Environment) {
     super(env, "auth");
-    this.router.post("/login", this.__login.bind(this));
-    this.router.post("/logout", this.env.session.checkAuthentication(), this.__logout.bind(this));
+    this.router.post("/login", this.login.bind(this));
+    this.router.post("/logout", this.env.session.checkAuthentication(), this.logout.bind(this));
   }
 
-  /**
-   * Logs in the user and generates a JWT token.
-   * 
-   * @param {import("express").Request} request - The request object.
-   * @param {import("express").Response} response - The response object.
-   * @param {import("express").NextFunction} next - The next middleware function.
-   */
-  async __login(request, response, next) {
+  /** Logs in the user and generates a JWT token. */
+  private async login(request: Request, response: Response, next: NextFunction): Promise<void> {
     // TODO: Implement login logic
     response.sendStatus(HttpResponseStatus.NOT_IMPLEMENTED);
   }
 
-  /**
-   * Logs out the user.
-   *
-   * @param {import("common-mjs").SessionRequest} request - The request object.
-   * @param {import("express").Response} response - The response object.
-   * @param {import("express").NextFunction} next - The next middleware function.
-   */
-  async __logout(request, response, next) {
+  /** Logs out the user. */
+  private async logout(request: SessionRequest, response: Response, next: NextFunction): Promise<void> {
     // TODO: Implement logout logic
     response.sendStatus(HttpResponseStatus.NOT_IMPLEMENTED);
   }
@@ -290,14 +219,13 @@ class AuthController extends Abstract_Controller {
 export { AuthController };
 ```
 
-app/cronie/main-cronie.mjs:
-```javascript
+src/cronie/main-cronie.ts:
+```typescript
 import { program } from "commander";
-import { Environment } from "../environment.mjs";
+import { Environment } from "../environment.js";
 
 (async () => {
-  /** @type {Environment} */
-  var env;
+  let env: Environment;
   try {
     env = new Environment();
     await env.mongoClient.connect();
@@ -307,276 +235,144 @@ import { Environment } from "../environment.mjs";
   }
 
   program.parse(process.argv);
-
   process.setMaxListeners(0);
-
   // TODO: Add batch implementations here
 })();
 ```
 
-app/lib/utils.mjs:
-```javascript
+src/lib/utils.ts:
+```typescript
 import _ from "lodash";
-import moment from "moment";
 
 export class String {
-  /**
-   * 
-   * @param {string} separator 
-   * @param  {...string} values 
-   * @returns 
-   */
-  static joinNotEmptyValues(separator, ...values) {
-    return values.filter(item => { return !!_.trimStart(_.trimEnd(item)); }).join(separator);
+  static joinNotEmptyValues(separator: string, ...values: string[]): string {
+    return values.filter(item => !!_.trimStart(_.trimEnd(item))).join(separator);
   }
 
-  /**
-   * Converts a string to an integer.
-   *
-   * @param {string} value - The string to convert.
-   * @returns {number} The converted integer if the value is a non-negative integer, otherwise NaN.
-   */
-  static stringToPositiveInteger(value) {
+  static stringToPositiveInteger(value: string): number {
     const num = Number(value);
     return _.isInteger(num) && num >= 0 ? num : NaN;
   }
 
-  /**
-   * Converts a string to a boolean.
-   *
-   * @param {string} value - The string to convert.
-   * @returns {boolean} The converted boolean if the value is a boolean, otherwise false.
-   */
-  static stringToBoolean(value) {
-    if (!value) {
-      return false;
-    }
-    if (typeof (value) === "boolean") {
-      return value;
-    }
-    return value.toLowerCase() === 'true';
+  static stringToBoolean(value: string | boolean): boolean {
+    if (!value) return false;
+    if (typeof value === "boolean") return value;
+    return String(value).toLowerCase() === "true";
   }
 
-  /**
-   * Formats a number with a minimum length and optional decimal places.
-   *
-   * @param {number} value - The number to format.
-   * @param {number} length - Minimum length of the formatted string (pads with zeros).
-   * @param {number} [decimal] - Number of decimal places to show.
-   * @returns {string} The formatted number string.
-   */
-  static numberFormat(value, length, decimal) {
-    let _format = value + '';
-    if (decimal) {
-      _format = value.toFixed(decimal);
-    }
-    while (_format.length < length) {
-      _format = '0' + _format;
-    }
-    return _format;
+  static numberFormat(value: number, length: number, decimal?: number): string {
+    let fmt = value + "";
+    if (decimal != null) fmt = value.toFixed(decimal);
+    while (fmt.length < length) fmt = "0" + fmt;
+    return fmt;
   }
 
-  /**
-   * Formats a number as a currency string with Euro symbol.
-   *
-   * @param {number} val - The value to format.
-   * @returns {string} The formatted money string (e.g., "10.50 €").
-   */
-  static moneyFormat(val) {
-    const _v = parseFloat(val.toString());
-    if (isNaN(_v)) {
-      return '';
-    }
-    return this.numberFormat(_v, 0, 2) + ' €';
+  static moneyFormat(val: number): string {
+    const v = parseFloat(val.toString());
+    if (isNaN(v)) return "";
+    return this.numberFormat(v, 0, 2) + " €";
   }
 }
 
 export class Validators {
-  static isEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  static isEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  static isNotEmptyString(value) {
-    return _.isString(value) && _.trim(value) !== '';
+  static isNotEmptyString(value: unknown): boolean {
+    return _.isString(value) && _.trim(value) !== "";
   }
 
-  /**
-   * Verifica se una stringa è un URL valido con protocollo http o https.
-   * @param {string} value - La stringa da validare.
-   * @returns {boolean} true se è un URL valido, false altrimenti.
-   */
-  static isValidUrl(value) {
+  static isValidUrl(value: string): boolean {
     try {
       new URL(value);
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   }
 
-  static validPassword(value) {
-    if (_.isNil(value) || _.isEmpty(value)) {
-      return false;
-    }
-    if (value.length < 8) {
-      return false;
-    }
+  static validPassword(value: string | null | undefined): boolean {
+    if (_.isNil(value) || _.isEmpty(value) || value.length < 8) return false;
     return /\d/.test(value) && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\W|_/.test(value);
   }
 }
 
 export class GenericFunctions {
-  /**
-   * Pauses the execution for a specified number of milliseconds.
-   *
-   * @param {number} ms - The number of milliseconds to sleep.
-   * @returns {Promise<void>} A promise that resolves after the specified duration.
-   */
-  static async sleep(ms) {
+  static sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 ```
 
-app/lib/express-middlewares.mjs:
-```javascript
+src/lib/express-middlewares.ts:
+```typescript
 import { HttpResponseStatus } from "common-mjs";
 import _ from "lodash";
-import { String } from "./utils.mjs";
+import type { Request, Response, NextFunction } from "express";
+import { String } from "./utils.js";
 
 export class ExpressMiddlewares {
-  /**
-   * Middleware function to validate and parse an integer parameter from the request.
-   *
-   * @param {string} param - The name of the parameter to validate and parse.
-   * @param {number} status - The HTTP status code to send if the parameter is invalid.
-   * @returns {function(import("express").Request, import("express").Response, import("express").NextFunction): void} Middleware function to validate and parse the parameter.
-   */
-  static validIntegerPathParam(param, status = HttpResponseStatus.MISSING_PARAMS) {
-    /**
-     * Middleware function to validate and parse a parameter from the request.
-     *
-     * @param {import("express").Request} req - The request object.
-     * @param {import("express").Response} res - The response object.
-     * @param {import("express").NextFunction} next - The next middleware function.
-     */
-    const _middleware = (req, res, next) => {
+  /** Sets res.locals[param] with the parsed integer. */
+  static validIntegerPathParam(param: string, status = HttpResponseStatus.MISSING_PARAMS) {
+    return (req: Request, res: Response, next: NextFunction): void => {
       const paramValue = req.params[param];
-      const value = parseInt(paramValue);
-
-      if (!paramValue || !/^\d+$/.test(paramValue)) {
+      const value = parseInt(paramValue, 10);
+      if (!paramValue || !/^\d+$/.test(paramValue) || !_.isInteger(value) || value !== parseFloat(paramValue)) {
         res.sendStatus(status);
         return;
       }
-
-      if (_.isInteger(value) && value === parseFloat(paramValue)) {
-        res.locals[param] = value;
-        next();
-        return;
-      }
-
-      res.sendStatus(status);
-      return;
+      res.locals[param] = value;
+      next();
     };
-
-    return _middleware;
   }
 
-  /**
-   * Middleware function to validate and parse an integer parameter from the request.
-   *
-   * @param {string} param - The name of the parameter to validate and parse.
-   * @param {number} status - The HTTP status code to send if the parameter is invalid.
-   * @returns {function(import("express").Request, import("express").Response, import("express").NextFunction): void} Middleware function to validate and parse the parameter.
-   */
-  static validIntegerQueryParam(param, required = false) {
-    /**
-     * Middleware function to validate and parse a parameter from the request.
-     *
-     * @param {import("express").Request} req - The request object.
-     * @param {import("express").Response} res - The response object.
-     * @param {import("express").NextFunction} next - The next middleware function.
-     */
-    const _middleware = (req, res, next) => {
+  static validIntegerQueryParam(param: string, required = false) {
+    return (req: Request, res: Response, next: NextFunction): void => {
       const paramValue = req.query[param];
       const valued = !_.isNil(paramValue);
-      const value = valued ? parseInt(paramValue) : null;
-
-      if ((required && !valued) || (valued && !/^\d+$/.test(paramValue))) {
+      const value = valued ? parseInt(String(paramValue), 10) : null;
+      if ((required && !valued) || (valued && !/^\d+$/.test(String(paramValue)))) {
         res.sendStatus(HttpResponseStatus.MISSING_PARAMS);
         return;
       }
-
-      if (valued && _.isInteger(value) && value === parseFloat(paramValue)) {
+      if (valued && _.isInteger(value) && value === parseFloat(String(paramValue))) {
         res.locals[param] = value;
       }
-
       next();
-      return;
     };
-
-    return _middleware;
   }
 
+  /** Sets res.locals.limit and res.locals.offset. Offset = (page - 1) * limit. */
   static parsePaginationParams(required = true) {
-    /**
-     * Middleware function to parse pagination parameters from the request query.
-     *
-     * @param {import("express").Request} req - The request object.
-     * @param {import("express").Response} res - The response object.
-     * @param {import("express").NextFunction} next - The next middleware function.
-     */
-    const _middleware = (req, res, next) => {
-      /** @type {{page: string, pageSize: string}} */
-      let queryParams = req.query;
-
-      /**
-       * @type {number}
-       * @description The maximum number of profiles to retrieve.
-       */
-      let limit;
-      /**
-       * @type {number}
-       * @description The offset to start retrieving profiles.
-       */
-      let offset;
-
+    return (req: Request, res: Response, next: NextFunction): void => {
+      const queryParams = req.query as { page?: string; pageSize?: string };
+      let limit: number | null;
+      let offset: number;
       if (!_.isNil(queryParams.page) && !_.isNil(queryParams.pageSize)) {
         limit = String.stringToPositiveInteger(queryParams.pageSize);
-        offset = String.stringToPositiveInteger(queryParams.page - 1) * limit;
+        const page = String.stringToPositiveInteger(queryParams.page);
+        offset = (page - 1) * limit;
       } else {
         if (required) {
           res.sendStatus(HttpResponseStatus.MISSING_PARAMS);
           return;
-        } else {
-          limit = null;
-          offset = 0;
         }
+        limit = null;
+        offset = 0;
       }
-
-      if (Number.isNaN(limit) || Number.isNaN(offset) || limit === 0) {
+      if (limit === null || Number.isNaN(limit) || Number.isNaN(offset) || limit === 0) {
         res.sendStatus(HttpResponseStatus.MISSING_PARAMS);
         return;
       }
-
-      res.locals["limit"] = limit;
-      res.locals["offset"] = offset;
+      res.locals.limit = limit;
+      res.locals.offset = offset;
       next();
     };
-
-    return _middleware;
   }
 
-  static checkHeaderToken(headerName, expectedToken) {
-    /**
-     * Middleware function to check the presence and validity of a specific header token.
-     *
-     * @param {import("express").Request} req - The request object.
-     * @param {import("express").Response} res - The response object.
-     * @param {import("express").NextFunction} next - The next middleware function.
-     */
-    const _middleware = (req, res, next) => {
+  static checkHeaderToken(headerName: string, expectedToken: string) {
+    return (req: Request, res: Response, next: NextFunction): void => {
       const token = req.headers[headerName.toLowerCase()];
       if (_.isNil(token) || token !== expectedToken) {
         res.sendStatus(HttpResponseStatus.NOT_AUTHORIZED);
@@ -584,48 +380,35 @@ export class ExpressMiddlewares {
       }
       next();
     };
-
-    return _middleware;
   }
 }
 ```
 
-app/model/mongo/mongo-models.mjs:
-```javascript
-import { MongoClienManager } from "common-mjs";
-import { ExampleCollection } from "./example.collection.mjs";
+src/model/mongo/mongo-models.ts:
+```typescript
+import type { MongoClienManager } from "common-mjs";
+import { ExampleCollection } from "./example.collection.js";
 
 export class MongoModels {
-  /** @type {MongoClienManager} */
-  __mongoClient;
+  private mongoClient: MongoClienManager;
+  example!: ExampleCollection;
 
-  /**
-   * 
-   * @param {MongoClienManager} mongoClient 
-   */
-  constructor(mongoClient) {
-    this.__mongoClient = mongoClient;
+  constructor(mongoClient: MongoClienManager) {
+    this.mongoClient = mongoClient;
   }
 
-  init() {
-    this.example = new ExampleCollection(this.__mongoClient);
+  init(): void {
+    this.example = new ExampleCollection(this.mongoClient);
   }
 }
 ```
 
-app/model/mongo/example.collection.mjs:
-```javascript
-import { Abstract_BaseCollection, MongoClienManager } from "common-mjs";
+src/model/mongo/example.collection.ts:
+```typescript
+import { Abstract_BaseCollection, type MongoClienManager } from "common-mjs";
 
-/**
- * Example MongoDB collection
- */
 class ExampleCollection extends Abstract_BaseCollection {
-  /**
-   * 
-   * @param {MongoClienManager} dbMan 
-   */
-  constructor(dbMan) {
+  constructor(dbMan: MongoClienManager) {
     super("example", dbMan);
   }
 }
@@ -633,38 +416,26 @@ class ExampleCollection extends Abstract_BaseCollection {
 export { ExampleCollection };
 ```
 
-app/model/postgres/pg-models.mjs:
-```javascript
-import { PgClientManager } from "common-mjs";
-import { UsersModel } from "./users.model.mjs";
+src/model/postgres/pg-models.ts:
+```typescript
+import type { PgClientManager } from "common-mjs";
+import { UsersModel } from "./users.model.js";
 
-class PgModels {
-  /**
-   *
-   * @param {PgClientManager} connection
-   */
-  constructor(connection) {
+export class PgModels {
+  users: UsersModel;
+
+  constructor(connection: PgClientManager) {
     this.users = new UsersModel(connection);
   }
 }
-
-export { PgModels };
 ```
 
-app/model/postgres/users.model.mjs:
-```javascript
-import { Abstract_PgModel } from "common-mjs";
+src/model/postgres/users.model.ts:
+```typescript
+import { Abstract_PgModel, type PgClientManager } from "common-mjs";
 
-/**
- * Users model for PostgreSQL
- * TODO: Implement user-related database operations
- */
 class UsersModel extends Abstract_PgModel {
-  /**
-   * 
-   * @param {import("common-mjs").PgClientManager} connection 
-   */
-  constructor(connection) {
+  constructor(connection: PgClientManager) {
     super(connection);
   }
 }
@@ -674,54 +445,31 @@ export { UsersModel };
 
 3) Configuration Files
 
-config/config.mjs:
-```javascript
-export default {
+config/config.ts:
+```typescript
+const config = {
   databases: {
     postgres: {
-      master: {
-        database: "",
-        user: "",
-        password: "",
-        host: ""
-      },
-      slave: {
-        database: "",
-        user: "",
-        password: "",
-        host: ""
-      }
+      master: { database: "", user: "", password: "", host: "" },
+      slave: { database: "", user: "", password: "", host: "" }
     },
     mongo: {
       dbconfig: "",
-      options: {
-        maxPoolSize: 5
-      }
+      options: { maxPoolSize: 5 }
     }
   },
   logLevel: 3,
   root: "/api/v2",
   defaultPort: 9804,
   bodyParserLimit: "50mb",
-  redisOptions: {
-    url: "",
-    password: ""
-  },
-  sessionCookie: {
-    name: "",
-    options: {
-      sameSite: "none"
-    }
-  },
+  redisOptions: { url: "", password: "" },
+  sessionCookie: { name: "", options: { sameSite: "none" } },
   sessionHeaderName: "",
-  sessionExpiration: {
-    short: 7890000,
-    long: 31536000
-  },
-  sparkpost: {
-    api: ""
-  }
+  sessionExpiration: { short: 7890000, long: 31536000 },
+  sparkpost: { api: "" }
 };
+
+export default config;
 ```
 
 4) Documentation Files
@@ -984,10 +732,34 @@ components:
 ```
 
 5) Test Structure
-- Create empty directories: test/controllers/, test/lib/, test/pg-models/
-- No test files, just directory structure
+- Create empty directories: test/controllers/, test/lib/, test/model/postgres/ (or test/pg-models/)
+- No test files, just directory structure. Tests will be **.test.ts**; run with **`npm test`** (Mocha + **`--require tsx/cjs`**).
 
-6) Project Configuration Files
+6) TypeScript Configuration
+
+tsconfig.json:
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "config/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
+}
+```
+
+7) Project Configuration Files
 
 .gitignore:
 ```
@@ -1053,7 +825,11 @@ package-lock.json
 
 # configurations
 config/config.json
-config/config.mjs
+config/config.ts
+
+# TypeScript
+dist/
+*.tsbuildinfo
 
 # Visual Studio Code Settings
 .vscode
@@ -1061,7 +837,7 @@ config/config.mjs
 # Files
 fileserver
 .DS_Store
-app/.DS_Store
+src/.DS_Store
 ```
 
 .dockerignore:
@@ -1080,29 +856,34 @@ package.json:
   "description": "Backend API",
   "type": "module",
   "scripts": {
-    "start": "node ./app/main.mjs",
-    "start-debug": "node --inspect ./app/main.mjs",
-    "start-nodemon-debug": "nodemon --inspect ./app/main.mjs",
-    "test": "mocha"
+    "build": "tsc",
+    "start": "tsx src/main.ts",
+    "start:dev": "tsx watch src/main.ts",
+    "start-debug": "node --import tsx --inspect src/main.ts",
+    "start-nodemon-debug": "nodemon --exec tsx --inspect src/main.ts",
+    "test": "mocha 'test/**/*.test.ts' --require tsx/cjs",
+    "test:all": "mocha 'test/**/*.test.ts' --require tsx/cjs",
+    "test:watch": "mocha 'test/**/*.test.ts' --require tsx/cjs --watch"
   },
   "devDependencies": {
     "@types/chai": "^5.0.0",
     "@types/cookie-parser": "^1.4.7",
-    "@types/fs-extra": "^11.0.4",
+    "@types/express": "^4.17.21",
     "@types/lodash": "^4.17.10",
+    "@types/node": "^22.0.0",
     "@types/sinon": "^17.0.3",
     "chai": "^5.1.1",
-    "chai-as-promised": "^8.0.0",
     "mocha": "^11.7.5",
-    "sinon": "^21.0.1"
+    "sinon": "^21.0.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
   },
   "dependencies": {
-    "@types/pg": "^8.11.8",
+    "commander": "^12.0.0",
     "common-mjs": "git+ssh://common-mjs/ambrogio-dev/common-mjs#fe-refactor",
     "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
     "lodash": "^4.17.21",
-    "moment": "^2.30.1",
     "mongodb": "^6.8.0",
     "pg": "^8.12.0",
     "redis": "^4.7.0"
@@ -1119,10 +900,10 @@ package.json:
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/app/main.mjs"
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "src/main.ts"],
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
@@ -1132,6 +913,8 @@ README.md:
 ```markdown
 # ${projectName}
 
+TypeScript backend (Node.js, Express, ESM). Source under **src/**.
+
 ## Setup
 
 1. Install dependencies:
@@ -1140,18 +923,20 @@ README.md:
    \`\`\`
 
 2. Configure the application:
-   - Copy `config/config.mjs` and fill in your database and service credentials
+   - Copy or adapt `config/config.ts` and set database and service credentials.
 
 3. Start the server:
    \`\`\`bash
    npm start
    \`\`\`
+   (runs with **tsx**; no build step required for development.)
 
 ## Development
 
+- Build: `npm run build` (output in `dist/`)
+- Start with watch: `npm run start:dev`
 - Start with debug: `npm run start-debug`
-- Start with nodemon: `npm run start-nodemon-debug`
-- Run tests: `npm test`
+- Run tests: `npm test` or `npm run test:all` (Mocha + tsx/cjs for `.test.ts` files)
 ```
 
 Output:
@@ -1160,10 +945,9 @@ Output:
 - All file paths should be relative to the workspace root (create the project structure directly in the current directory)
 
 Important Notes:
-- All files must use ES modules (.mjs extension)
-- Use proper JSDoc comments where applicable
-- Ensure all imports are correct and match the structure
-- The project should be immediately runnable after npm install and config setup
-- All file paths should be created relative to the workspace root (not in a subfolder)
-- The project structure should be self-contained and independent
-- Replace ${projectName} with the actual project name when creating files
+- **TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"`). Run with **tsx** (or compile with `tsc` and run from `dist/`).
+- **Controller methods:** Use **private** method names **without** `__` (e.g. `login`, `logout`). Tests call them via `(controller as any).methodName(...)`.
+- **Imports:** Use **.js** extension in import paths for ESM resolution (e.g. `from "./app.js"`); tsx/Node resolve to `.ts` at runtime when needed.
+- Ensure all imports match the structure (src/, config/). The project should be runnable after `npm install` and config setup.
+- Create all paths relative to the workspace root. Replace **${projectName}** with the actual project name when creating files.
+- **Tests:** Use **.test.ts** and **`--require tsx/cjs`** in Mocha scripts (see refactor.md / test.md for conventions).
