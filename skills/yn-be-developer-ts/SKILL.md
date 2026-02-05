@@ -65,7 +65,10 @@ Source lives under **src/**; no **app/**.
 ## TypeScript Conventions
 
 ### Types and Interfaces
-- **Single source of truth**: Define shared interfaces (e.g. `IGrantRecord`, `IUserRecord`) in **one** model file; import elsewhere. Do not duplicate.
+- **One model file per table**: Each table has exactly one model file (e.g. `scheduled_phone_settings_sp` → `scheduled-phone-settings.model.ts`). File name mirrors the table name (without suffix).
+- **One interface per table**: Exactly one `I<TableName>Record` interface per table with **all** columns. No subset interfaces (no `IRetryRow`, `IListItem`, etc.). Interface name reflects table: `scheduled_phone_setting_fails_sf` → `IScheduledPhoneSettingFailRecord`.
+- **Single source of truth**: Define interfaces in one model file; import elsewhere. Do not duplicate.
+- **Use model interfaces**: Always use the model interface. Do **not** define custom interfaces in controllers or lib for the same shape. Import the `*Record` interface from the model.
 - **Record vs extended**: Base interface = DB columns only (e.g. `IUserRecord` with `_us` fields). Extended interface = computed/joined (e.g. `IUserExtended` with `fullname`, `departmentFullname`, `pbx`, `plan`). Model methods return the extended type when the query includes joins.
 - **Object properties in \*Record interfaces**: Properties that are object types (e.g. JSONB columns) must be typed with **`| string`** in the Record interface, because on insert/update they are passed to the database as serialized strings (e.g. `JSON.stringify(...)`). Example: `automatic_data_pm?: IAutomaticDataPm | string`.
 - **Split model interfaces**: e.g. `IWorkingPlanRecord` (table only) and `IWorkingPlanExtended extends IWorkingPlanRecord` (adds `users?`). In controllers use optional chaining: `workingPlan.users?.map(...) ?? []`.
@@ -93,6 +96,7 @@ Source lives under **src/**; no **app/**.
 ## SQL & PgFilter
 
 - Use **queryReturnFirst** for single-row checks (e.g. folder count); **query** for multi-row or when expecting `{ rows }`. Tests must stub and assert on the method actually used.
+- **row_to_json for joined tables:** When extracting **multiple fields from the second (or joined) table** in a JOIN, use **`row_to_json(alias.*) as alias`** instead of listing individual columns. Example: `select pb.id_pb, row_to_json(pm.*) as pm from pbx_pb pb inner join pbx_money_pm pm on ...` → the row has `row.pm` with the full record. Type it with the model interface (e.g. `pm: IPbxMoneyRecord`).
 - **PgFilter (common-mjs)**: `addEqual`, `addIn`, `addCondition`, `addPagination`, `getWhere()`, `getPagination()`, and **always** **`getParameterPlaceHolder(value)`** for custom conditions (never manual `$1`, `$2`). Ranges: `addGreaterThan(col, val, true)` = `>=`, `addLessThan(col, val, true)` = `<=` (third param = orEqual boolean).
 
 ## Transactions
