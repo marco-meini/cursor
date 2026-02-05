@@ -13,6 +13,8 @@ Refactor a legacy yn-be controller to yn-be-v2.
 - Use **TypeScript**, `PgClientManager` (`env.pgConnection`), and shared utils
 - Enforce ExpressMiddlewares for pagination and path params
 
+**Do not write tests in this step.** The refactor command produces only implementation code. After correcting the refactor result, write or update tests using the **test** command (`commands/test.md`).
+
 ---
 
 ## 1) Controller skeleton
@@ -55,6 +57,7 @@ Refactor a legacy yn-be controller to yn-be-v2.
 
 - **Single source of truth:** Define shared interfaces (e.g. `IGrantRecord`, `IUserRecord`) in **one** model file (e.g. `grants.model.ts` for `IGrantRecord`); import elsewhere. Do not duplicate interface definitions across files.
 - **Record vs extended:** Prefer a base interface for DB columns only (e.g. `IUserRecord` with only `_us` fields, including e.g. `status_us` when from table or always present) and an extended interface for computed/joined data (e.g. `IUserExtended` with `fullname`, `departmentFullname`, `pbx`, `plan`). Have model methods return the extended type when the query includes joined/computed fields.
+- **Object properties in \*Record interfaces:** Properties that are object types (e.g. JSONB columns) must be typed with **`| string`** in the Record interface, because on insert/update they are passed to the database as serialized strings (e.g. `JSON.stringify(...)`). Example: `automatic_data_pm?: IAutomaticDataPm | string`.
 - **Split model interfaces:** For models that return both “record-only” and “with relations” shapes, use e.g. `IWorkingPlanRecord` (table columns only) and `IWorkingPlanExtended extends IWorkingPlanRecord` (adds `users?`). Use optional chaining in controllers when reading optional relations (e.g. `workingPlan.users?.map(...) ?? []`).
 - **Typing callbacks:** When mapping over arrays with mixed types (e.g. `type: string | number`), type the callback parameter to accept the source type and coerce in the return. Use `Buffer | string` when a value can be either (e.g. export output).
 
@@ -82,10 +85,12 @@ Refactor a legacy yn-be controller to yn-be-v2.
 
 ---
 
-## 8) Tests (Mocha + tsx)
+## 8) Tests (Mocha + tsx) — reference only for test.md
+
+This section describes patterns that **test.md** will use when you run the test command after the refactor. **Do not generate test code as part of the refactor.** Use **test.md** once the refactor output has been corrected.
 
 - **Run tests:** Use `npm test` or `npm run test:all`. Scripts must use **`--require tsx/cjs`** (not `tsx/register`; from tsx v4 the register subpath is not exported) so Mocha can load `.ts` files.
-- **Controller methods:** Controllers expose **private** methods **without** `__` (e.g. `getNations`, `login`). In tests:
+- **Controller methods:** Controllers expose **private** methods **without** `__` (e.g. `getNations`, `login`). In tests (when written via test.md):
   - Call them via `(controller as any).methodName(...)`.
   - Use `describe('methodName', ...)` (not `describe('__methodName', ...)`).
 - **Stubs:** Stub the real method name (e.g. `sinon.stub(controller as any, 'sendRequest')`), not `__sendRequest`. Same for lib/helpers: e.g. Bridge uses `sendRequest`, PunchingExportsHelper uses `parsePaddingTemplate`, `parseDateFormat`, `parseBoolean`.

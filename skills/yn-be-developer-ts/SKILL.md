@@ -67,6 +67,7 @@ Source lives under **src/**; no **app/**.
 ### Types and Interfaces
 - **Single source of truth**: Define shared interfaces (e.g. `IGrantRecord`, `IUserRecord`) in **one** model file; import elsewhere. Do not duplicate.
 - **Record vs extended**: Base interface = DB columns only (e.g. `IUserRecord` with `_us` fields). Extended interface = computed/joined (e.g. `IUserExtended` with `fullname`, `departmentFullname`, `pbx`, `plan`). Model methods return the extended type when the query includes joins.
+- **Object properties in \*Record interfaces**: Properties that are object types (e.g. JSONB columns) must be typed with **`| string`** in the Record interface, because on insert/update they are passed to the database as serialized strings (e.g. `JSON.stringify(...)`). Example: `automatic_data_pm?: IAutomaticDataPm | string`.
 - **Split model interfaces**: e.g. `IWorkingPlanRecord` (table only) and `IWorkingPlanExtended extends IWorkingPlanRecord` (adds `users?`). In controllers use optional chaining: `workingPlan.users?.map(...) ?? []`.
 - **Callbacks**: When mapping over arrays with mixed types, type the callback parameter to accept the source type; use `Buffer | string` when a value can be either.
 
