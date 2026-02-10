@@ -57,7 +57,7 @@ Source lives under **src/**; no **app/**.
 
 ### Data Layer
 - **PostgreSQL**: `env.pgConnection` (`query`, `queryReturnFirst`, `queryPaged`, `insert`, `updateByKey`, `startTransaction`, `commit`, `rollback`). Pass **`transactionClient: t`** (not `transaction`) when using a transaction.
-- **Models**: Prefer `env.pgModels.<model>.<method>()`; add new models in **src/model/postgres/pg-models.ts** (extend `Abstract_PgModel`).
+- **Models**: Prefer `env.pgModels.<model>.<method>()`; add new models in **src/model/postgres/pg-models.ts** (extend `Abstract_PgModel`). **Lookups by code/name** (e.g. get id by status code, get record by slug) belong in the **model**, not in the controller: expose methods like `getStatusIdByCode(status)`, `getBySlug(slug)` and call them from the controller.
 - **Read-only**: Use **`isSlave: true`** for COUNT and read-only SELECT; never for INSERT/UPDATE/DELETE.
 - **updateByKey**: Keys are an **array** (e.g. `["id_us"]`, `['id_up']`), not a string. Payload may include `id_last_updater_up` from `request.session.idUser`.
 - **MongoDB**: `env.mongoClient`, `env.mongoModels`; same patterns as in JS skill for parameterized access and sanitization.
