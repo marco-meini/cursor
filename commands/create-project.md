@@ -24,6 +24,8 @@ Requirements:
   - test/lib/
   - test/model/postgres/ (or test/pg-models/)
   - .vscode/
+  - **.cursor/rules/** (Cursor project rules, .mdc files)
+  - **.cursor/skills/** (Cursor project skills, one folder per skill with SKILL.md)
 
 2) Core Application Files
 
@@ -1004,10 +1006,44 @@ TypeScript backend (Node.js, Express, ESM). Source under **src/**.
 - Run tests: `npm test` or `npm run test:all` (Mocha + tsx/cjs for `.test.ts` files)
 ```
 
+8) Cursor rules and skills
+
+Create project-local Cursor rules and a TypeScript backend skill so the AI follows the same conventions across machines (no symlinks or absolute paths).
+
+**.cursor/rules/use-backend-skill.mdc:**
+```yaml
+---
+description: Use the TypeScript backend skill for conventions in this project.
+alwaysApply: true
+---
+
+# Use backend TypeScript skill
+
+When writing or modifying code in this project, **always follow the conventions and best practices** defined in the skill at `.cursor/skills/yn-be-developer-ts/SKILL.md`.
+
+Apply the skill when working on controllers, models, lib, SQL (PgFilter, row_to_json, flat query result shape), types and interfaces, tests (Mocha + tsx), validation, and error handling.
+```
+
+**.cursor/skills/yn-be-developer-ts/SKILL.md:** Create the directory `.cursor/skills/yn-be-developer-ts/` and add a SKILL.md with YAML frontmatter and content. Use the same structure as the shared skill (see **cursor/skills/yn-be-developer-ts/SKILL.md** in the cursor workspace if available): `name`, `description` in frontmatter, then sections for When to Use, Core Technologies, Architecture Patterns, TypeScript Conventions, SQL & PgFilter, Transactions, Testing, etc. If that file is not available, create a minimal SKILL.md:
+
+```markdown
+---
+name: yn-be-developer-typescript
+description: Best practices for TypeScript backends (src/, Express, PostgreSQL/MongoDB, Mocha+tsx).
+---
+
+# Backend TypeScript – Best Practices
+
+Follow the patterns in **refactor.md** and **test.md**: TypeScript under src/, ESM, private methods without __, transactionClient, one interface per table, flat query result shape, row_to_json for joined data, getParameterPlaceHolder, no unnecessary variables. Use env.pgConnection / env.pgModels; validate with _.isNil, _.isArray, Number.isInteger(id) && id > 0.
+```
+
+(When the full skill document is available, replace the minimal content above with it so the project is self-contained and works on any machine.)
+
 Output:
 - Create all files and directories in the current workspace root
 - Use the write tool for each file
 - All file paths should be relative to the workspace root (create the project structure directly in the current directory)
+- Create **.cursor/rules/** and **.cursor/skills/** with at least one rule (e.g. use-backend-skill.mdc) and one skill (e.g. .cursor/skills/yn-be-developer-ts/SKILL.md) so the project uses Cursor conventions without symlinks or user-specific paths
 
 Important Notes:
 - **TypeScript:** All source under **src/** with **.ts** extension. Use ESM (`"type": "module"` in package.json) so that `node dist/main.js` runs correctly. Run in dev with **tsx** or compile with `tsc` and run from `dist/`.

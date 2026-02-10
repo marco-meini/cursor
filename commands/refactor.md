@@ -49,7 +49,12 @@ Refactor a legacy yn-be controller to yn-be-v2.
 - For lists: deterministic ordering and envelope `{ total, data }`
 - **Read-only queries:** Use `isSlave: true` for COUNT and read-only SELECT. Never use `isSlave: true` for INSERT/UPDATE/DELETE.
 - **Avoid duplicate queries:** Extract repeated or similar queries into model methods (in classes extending `Abstract_PgModel`). Register new models in `src/model/postgres/pg-models.ts`. Use `this.env.pgModels.<model>.<method>()` in controllers.
-- **row_to_json for joined tables:** When extracting **multiple fields from the second (or joined) table** in a JOIN, use **`row_to_json(alias.*) as alias`** instead of listing individual columns. Example: `select pb.id_pb, row_to_json(pm.*) as pm from pbx_pb pb inner join pbx_money_pm pm on ...` → the row has `row.pm` with the full record. Type it with the model interface (e.g. `pm: IPbxMoneyRecord`).
+- **Query result shape — flat row, no wrapper:** Type the query result as the **exact row shape** returned by the SELECT. Do **not** wrap the whole row in an outer `SELECT row_to_json(q) AS question FROM (...) q`. Return columns directly so each row has a flat structure. Example type: `query<{ id_tq: number; mandatory: boolean; type: string; choices: ITicketQuestionChoiceRecord[]; tree: ITicketCustomizedTreesRecord }>`.
+- **row_to_json for joined/related data:**
+  - **Single related record:** Use `row_to_json(alias) AS column_name` (e.g. `row_to_json(tct) AS tree`) so the row has one column with the full record. Type it with the model interface (e.g. `tree: ITicketCustomizedTreesRecord`).
+  - **Array of related records:** Use `COALESCE((SELECT json_agg(row_to_json(alias)) FROM table alias WHERE ...), '[]'::json) AS column_name` so the row has one column with an array of full records. Type it with the record array (e.g. `choices: ITicketQuestionChoiceRecord[]`).
+  - Do **not** return only IDs when you need full records; use `json_agg(row_to_json(...))` for arrays and `row_to_json(...)` for the single record. Define and use `I*Record` interfaces for each table involved.
+- **No unnecessary variables:** Do not introduce intermediate variables when the value is used only once. Inline the call in place (e.g. use `${filterTree.getWhere(false)}` directly in the SQL template literal instead of `const treeWhere = filterTree.getWhere(false)`).
 - **PgFilter (common-mjs):** Use `addEqual`, `addIn`, `addCondition`, `addPagination`, `getWhere()`, `getPagination()`, and **always** `getParameterPlaceHolder(value)` for custom conditions (never manual `$1`, `$2`). For ranges: `addGreaterThan(col, val, true)` = `>=`, `addLessThan(col, val, true)` = `<=`; third param is `orEqual` (boolean), not type.
 
 ---
