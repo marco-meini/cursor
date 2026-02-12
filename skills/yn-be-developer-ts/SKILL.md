@@ -96,6 +96,9 @@ Source lives under **src/**; no **app/**.
 ## SQL & PgFilter
 
 - Use **queryReturnFirst** for single-row checks (e.g. folder count); **query** for multi-row or when expecting `{ rows }`. Tests must stub and assert on the method actually used.
+- **Mandatory SQL existence check before delivery:** Validate every SQL statement against the target DB to ensure referenced tables and columns exist.
+  - **SELECT:** Execute the query **as-is** (same SQL text, with valid parameters) and verify it runs without relation/column errors.
+  - **INSERT / UPDATE:** Do **not** execute the write during validation. Execute a read-only probe `SELECT` on the target table that references the same columns used by the write, to confirm table/column existence.
 - **Query result shape — flat row, no wrapper:** Type the query result as the **exact row shape** returned by the SELECT. Do **not** wrap the whole row in an outer `SELECT row_to_json(q) AS question FROM (...) q`. Return columns directly so each row has a flat structure. Example: `query<{ id_tq: number; mandatory: boolean; type: string; choices: ITicketQuestionChoiceRecord[]; tree: ITicketCustomizedTreesRecord }>`.
 - **Single query with array_agg for parent + aggregated child data:** When loading parent rows with per-parent arrays of child values (e.g. categories with user/group visibility ids), use **one query** with `LEFT JOIN` + `GROUP BY` and **`array_agg(...) FILTER (WHERE ...)`** (and `COALESCE(..., '{}')::integer[]` for empty arrays) instead of two round-trips (one SELECT parents, one SELECT children by parent ids then merge in code). Example: `SELECT tc.id_tc, tc.name_tc, COALESCE(array_agg(tcv.id_user_tcv) FILTER (WHERE tcv.id_user_tcv IS NOT NULL), '{}')::integer[] AS user_ids, ... FROM ticket_categories_tc tc LEFT JOIN ticket_category_visibilities_tcv tcv ON ... WHERE tc.id_customer_tc = $1 GROUP BY tc.id_tc, tc.name_tc ORDER BY tc.name_tc`.
 - **row_to_json for joined/related data:**
@@ -147,7 +150,7 @@ Source lives under **src/**; no **app/**.
 3. **Validate early** – _.isNil, _.isArray, Number.isInteger(id) && id > 0 where needed.
 4. **Handle errors** – next(error), HttpResponseStatus constants.
 5. **Types** – Single source for interfaces; Record vs Extended; optional chaining for relations.
-6. **SQL** – queryReturnFirst vs query; isSlave: true for read-only; getParameterPlaceHolder; transactionClient.
+6. **SQL** – queryReturnFirst vs query; isSlave: true for read-only; getParameterPlaceHolder; transactionClient; validate table/column existence before delivery (SELECT as-is, INSERT/UPDATE via probe SELECT).
 7. **No production changes for tests** – complete mock config (pubSubOptions, getstream, sms, etc.) and minimal fake env when appropriate.
 
 When in doubt, prefer the patterns described in **refactor.md** and **test.md** for controllers, handlers, types, and tests.
