@@ -6,8 +6,9 @@ Refactor a legacy yn-be controller to yn-be-v2.
 
 For coding conventions, SQL rules, typing, validation, transactions, testing patterns, and project structure, **do not duplicate rules in this command**.
 
-Use this skill as the single source of truth:
-- `skills/yn-be-developer-ts/SKILL.md`
+Use this skill as the single source of truth (path relative to the user's home directory, valid on any OS):
+- **macOS/Linux:** `$HOME/.agents/skills/yn-be-developer-ts/SKILL.md`
+- **Windows:** `%USERPROFILE%\.agents\skills\yn-be-developer-ts\SKILL.md`
 
 ## Inputs
 
@@ -31,5 +32,5 @@ Use this skill as the single source of truth:
 
 ## References
 
-- `skills/yn-be-developer-ts/SKILL.md` (all conventions and technical directives)
+- Skill at `$HOME/.agents/skills/yn-be-developer-ts/SKILL.md` (all conventions and technical directives; on Windows use `%USERPROFILE%\.agents\skills\yn-be-developer-ts\SKILL.md`)
 - `commands/test.md` (test creation/update flow)
