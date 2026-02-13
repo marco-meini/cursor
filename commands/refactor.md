@@ -24,6 +24,7 @@ Use this skill as the single source of truth (path relative to the user's home d
 - Preserve legacy behavior (authorization checks, filters, sorting, and response semantics).
 - Overwrite `${newFile}` and keep imports resolved inside yn-be-v2.
 - Do not drop functionality; if a dependency cannot be ported immediately, keep structure and add a focused `// TODO: ...`.
+- **Validate new or changed SQL** per skill (yn-be-developer-ts): run SELECTs as-is against the target DB to verify tables/columns; for INSERT/UPDATE use a read-only probe SELECT on the same columns. Use the Postgres skill (e.g. `~/.agents/skills/postgres`) when the project has `.skills/postgres/postgres.toml` (set `DB_PROJECT_ROOT`, `DB_PROFILE=local`).
 
 ## Out of scope
 
