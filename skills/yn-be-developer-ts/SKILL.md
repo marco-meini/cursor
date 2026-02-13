@@ -90,6 +90,7 @@ Source lives under **src/**; no **app/**.
 ## Error Handling & HTTP
 
 - Use **HttpResponseStatus** for all responses; propagate errors via **`next(error)`**.
+- **Validation errors (e.g. MISSING_PARAMS):** When returning 400 for missing or invalid parameters, send a **descriptive error code** as plain text with **`.send("ERROR_MESSAGE")`**. Use **UPPER_SNAKE_CASE** codes that describe the specific failure (e.g. `STATUS_REQUIRED`, `CATEGORY_NAME_REQUIRED`, `CHOICE_VALUE_ALREADY_EXISTS`), not a generic `"MISSING_PARAMS"` or `sendStatus` only. This lets clients show a clear message or map codes to i18n. Example: `return response.status(HttpResponseStatus.MISSING_PARAMS).send("QUESTION_LABEL_REQUIRED");`
 - Structured errors: `error.status`, optional `error.errors` array; never expose stack or raw DB errors in responses.
 - Cookies: When setting session cookie, pass an **options object** (e.g. `{ maxAge, ... }` or `{}`), never `null`.
 
@@ -148,7 +149,7 @@ Source lives under **src/**; no **app/**.
 1. **TypeScript only under src/** – .ts, ESM, real method names (no `__`).
 2. **Test with Mocha + tsx/cjs** – (controller as any).methodName, transactionClient, correct mock config.
 3. **Validate early** – _.isNil, _.isArray, Number.isInteger(id) && id > 0 where needed.
-4. **Handle errors** – next(error), HttpResponseStatus constants.
+4. **Handle errors** – next(error), HttpResponseStatus constants; for validation (400) use `.send("ERROR_MESSAGE")` with UPPER_SNAKE_CASE codes.
 5. **Types** – Single source for interfaces; Record vs Extended; optional chaining for relations.
 6. **SQL** – queryReturnFirst vs query; isSlave: true for read-only; getParameterPlaceHolder; transactionClient; validate table/column existence before delivery (SELECT as-is, INSERT/UPDATE via probe SELECT).
 7. **No production changes for tests** – complete mock config (pubSubOptions, getstream, sms, etc.) and minimal fake env when appropriate.
