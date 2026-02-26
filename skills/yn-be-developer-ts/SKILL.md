@@ -51,6 +51,7 @@ Source lives under **src/**; no **app/**.
 ### Controller Pattern
 - Extend **Abstract_Controller**; call `super(env, "<scope>")`
 - Register routes: `this.router.get("/", ..., this.methodName.bind(this))`
+- **Endpoint handler names:** Methods that implement an HTTP endpoint must use the **CRUD verb as prefix**: `get*` (GET), `post*` (POST), `patch*` (PATCH), `delete*` (DELETE). Examples: `getEvents`, `getUser`, `postTicket`, `patchSettings`, `deleteEvent`. Avoid generic names like `retrieveEvents` for GET handlers — use `getEvents` instead.
 - **Private methods without `__`**: e.g. `login`, `getNations`, `getAssociations`. In tests call via **`(controller as any).methodName(...)`**
 - Flow: try/catch → validate (early return with `HttpResponseStatus`) → `env.pgConnection` / `env.pgModels` → shape response
 - Use **ExpressMiddlewares**: `validIntegerPathParam('<param>')`, `parsePaginationParams(required)`, `validIntegerQueryParam('<param>', required?)`. Middleware sets **`res.locals[param]`** (not always `res.locals.id`). Pagination offset = **(page - 1) * limit**.
@@ -83,6 +84,7 @@ Source lives under **src/**; no **app/**.
 
 - **Files**: kebab-case (e.g. `auth.controller.ts`, `express-middlewares.ts`)
 - **Classes**: PascalCase (`AuthController`, `ExpressMiddlewares`)
+- **Endpoint handlers**: Name controller methods that map to routes with the **CRUD verb as prefix** — `get*`, `post*`, `patch*`, `delete*` (e.g. `getEvents`, `postTicket`, `patchUser`, `deleteEvent`).
 - **Private methods**: Real names, no `__` (e.g. `login`, `getNations`). Use TypeScript **`private`** when appropriate.
 - **Constants**: UPPER_SNAKE_CASE; **HttpResponseStatus** constants, never hardcoded numeric codes.
 - **Indentation**: 2 spaces; early returns; small, cohesive functions.
