@@ -99,6 +99,7 @@ Source lives under **src/**; no **app/**.
 
 ## SQL & PgFilter
 
+- **Query formatting:** Indent SQL strings so that lines are not overly long. Put major clauses on their own line (`SELECT`, `FROM`, `JOIN`, `WHERE`, `GROUP BY`, `ORDER BY`). Break long `SELECT` lists with one column or expression per line (indented). Break long subqueries and function arguments across lines with consistent indentation. This keeps queries readable and diff-friendly.
 - Use **queryReturnFirst** for single-row checks (e.g. folder count); **query** for multi-row or when expecting `{ rows }`. Tests must stub and assert on the method actually used.
 - **Mandatory SQL existence check before delivery:** Validate every SQL statement against the target DB to ensure referenced tables and columns exist.
   - **SELECT:** Execute the query **as-is** (same SQL text, with valid parameters) and verify it runs without relation/column errors.
