@@ -55,6 +55,7 @@ Source lives under **src/**; no **app/**.
 - **Private methods without `__`**: e.g. `login`, `getNations`, `getAssociations`. In tests call via **`(controller as any).methodName(...)`**
 - Flow: try/catch → validate (early return with `HttpResponseStatus`) → `env.pgConnection` / `env.pgModels` → shape response
 - Use **ExpressMiddlewares**: `validIntegerPathParam('<param>')`, `parsePaginationParams(required)`, `validIntegerQueryParam('<param>', required?)`. Middleware sets **`res.locals[param]`** (not always `res.locals.id`). Pagination offset = **(page - 1) * limit**.
+- **Path param IDs (integer):** Always use **`validIntegerPathParam('<param>')`** (or `validIntegerPathParam('<param>', HttpResponseStatus.NOT_FOUND)` when invalid id should return 404). In the handler, read the value from **`response.locals[param]`** (e.g. `response.locals.id`). Do **not** parse `request.params.id` (or other param names) manually in the handler.
 
 ### Data Layer
 - **PostgreSQL**: `env.pgConnection` (`query`, `queryReturnFirst`, `queryPaged`, `insert`, `updateByKey`, `startTransaction`, `commit`, `rollback`). Pass **`transactionClient: t`** (not `transaction`) when using a transaction.
