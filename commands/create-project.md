@@ -1092,7 +1092,6 @@ package-lock.json
 config/config.json
 
 # TypeScript
-dist/
 *.tsbuildinfo
 
 # Visual Studio Code Settings
@@ -1152,6 +1151,9 @@ package.json:
     "mongodb": "^6.8.0",
     "pg": "^8.12.0",
     "redis": "^4.7.0"
+  },
+  "overrides": {
+    "mongodb": "^6.8.0"
   }
 }
 ```
