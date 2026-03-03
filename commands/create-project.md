@@ -205,7 +205,7 @@ export class AuthController extends Abstract_Controller {
    */
   private async login(request: Request, response: Response, next: NextFunction): Promise<void> {
     // TODO: Implement login logic
-    response.sendStatus(HttpResponseStatus.NOT_IMPLEMENTED);
+    response.sendStatus(501);
   }
 
   /**
@@ -213,7 +213,7 @@ export class AuthController extends Abstract_Controller {
    */
   private async logout(request: SessionRequest, response: Response, next: NextFunction): Promise<void> {
     // TODO: Implement logout logic
-    response.sendStatus(HttpResponseStatus.NOT_IMPLEMENTED);
+    response.sendStatus(501);
   }
 }
 ```
