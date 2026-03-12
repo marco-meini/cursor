@@ -64,6 +64,11 @@ Source lives under **src/**; no **app/**.
 - **updateByKey**: Keys are an **array** (e.g. `["id_us"]`, `['id_up']`), not a string. Payload may include `id_last_updater_up` from `request.session.idUser`.
 - **MongoDB**: `env.mongoClient`, `env.mongoModels`; same patterns as in JS skill for parameterized access and sanitization.
 
+### Service / lib modules — prefer classes when methods share the same parameters
+- When several functions in a module **repeatedly receive the same context** (e.g. `Environment`, a DB connection, or a config object), refactor to a **class** that receives that context in the constructor and stores it on the instance (e.g. `private env: Environment`).
+- Expose the former "entry" functions as **instance methods** that take only the operation-specific arguments; internal steps can be private methods or closures that use `this.env` (or the stored context).
+- This avoids passing the same parameter through every call and keeps the API clearer (e.g. `new CalendarSync(this.env).syncCalendar(row)` instead of `syncCalendar(env, row)`).
+
 ## TypeScript Conventions
 
 ### Types and Interfaces
