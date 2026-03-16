@@ -74,6 +74,10 @@ Source lives under **src/**; no **app/**.
 ### Types and Interfaces
 - **One model file per table**: Each table has exactly one model file (e.g. `scheduled_phone_settings_sp` → `scheduled-phone-settings.model.ts`). File name mirrors the table name (without suffix).
 - **One interface per table**: Exactly one `I<TableName>Record` interface per table with **all** columns. No subset interfaces (no `IRetryRow`, `IListItem`, etc.). Interface name reflects table: `scheduled_phone_setting_fails_sf` → `IScheduledPhoneSettingFailRecord`.
+- **Each field defined only once**: Fields of the table belong **only** in the Record interface. Do **not** extend the Record and re-declare the same field names. Use **Partial\<I*Record\>** where you need a subset.
+- **Partial + extra: add ONLY fields that are NOT in the Record.** When you write a type like `Partial<I*Record> & { ... }`, the `& { ... }` part must contain **only** properties that do **not** exist in the Record. Never do: `Partial<IRecord> & { start_ce: Date }` (start_ce is already in IRecord). Never do: `Omit<Partial<IRecord>, "start_ce" | "end_ce"> & { start_ce: Date; end_ce: Date }` (removing fields to re-add them). Correct: `Partial<ICalendarRecord> & { occurrence?: number }` — occurrence is the only field not in the Record, so it is the only one you add. This avoids confusion and duplicate field definitions.
+- **Prefer Partial at the variable site**: Prefer typing variables/parameters as **`Partial<I*Record>`** (and `& { extra?: T }` only for properties **not** in the Record) instead of defining many Pick<> or dedicated subset interfaces. Define the type where the variable is used, or use a short type alias that does not re-list Record fields.
+- **In models, define only**: (1) **Record interfaces** (one per table, all columns), (2) **transformation interfaces** (data with renamed or restructured properties, e.g. for API output). If a transformation type is used in only one place, define it there to keep model files as clean as possible.
 - **Single source of truth**: Define interfaces in one model file; import elsewhere. Do not duplicate.
 - **Use model interfaces**: Always use the model interface. Do **not** define custom interfaces in controllers or lib for the same shape. Import the `*Record` interface from the model.
 - **Record vs extended**: Base interface = DB columns only (e.g. `IUserRecord` with `_us` fields). Extended interface = computed/joined (e.g. `IUserExtended` with `fullname`, `departmentFullname`, `pbx`, `plan`). Model methods return the extended type when the query includes joins.
@@ -167,7 +171,7 @@ Source lives under **src/**; no **app/**.
 2. **Test with Mocha + tsx/cjs** – (controller as any).methodName, transactionClient, correct mock config.
 3. **Validate early** – _.isNil, _.isArray, Number.isInteger(id) && id > 0 where needed.
 4. **Handle errors** – next(error), HttpResponseStatus constants; for validation (400) use `.send({ error: "SPECIFIC_CODE", message: "..." })` with a specific code that describes the message, inline (no helper).
-5. **Types** – Single source for interfaces; Record vs Extended; optional chaining for relations.
+5. **Types** – Single source (each field only in the Record); Partial\<I*Record\> at the variable site; when adding with `& { ... }` add ONLY properties not in the Record (never Omit/re-add or Partial + re-declare Record fields); in models only Record + transformation interfaces.
 6. **SQL** – queryReturnFirst vs query; isSlave: true for read-only; getParameterPlaceHolder; transactionClient; validate table/column existence before delivery (SELECT as-is, INSERT/UPDATE via probe SELECT).
 7. **No production changes for tests** – complete mock config (pubSubOptions, getstream, sms, etc.) and minimal fake env when appropriate.
 
