@@ -21,6 +21,7 @@ This skill provides guidance for working on TypeScript backend projects that fol
 - **Node.js**: ESM (`"type": "module"`), run with **tsx** (or compiled `dist/` with node)
 - **TypeScript**: Strict mode, `.ts` only under **src/** (and **config/** if needed)
 - **Imports**: Use **.js** extension in import paths for ESM resolution (e.g. `from "./app.js"`); tsx/Node resolve to `.ts` when needed. No `.mjs`.
+- **No dynamic imports in handlers**: Do not use `await import(...)` inside controller/model method bodies for normal dependencies. Resolve imports at module scope (or in a dedicated adapter module) to keep types and behavior explicit.
 
 ### Testing
 - **Mocha**: Test runner; scripts must use **`--require tsx/cjs`** (not `tsx/register`) so `.test.ts` files load
@@ -84,6 +85,8 @@ Source lives under **src/**; no **app/**.
 - **Object properties in \*Record interfaces**: Properties that are object types (e.g. JSONB columns) must be typed with **`| string`** in the Record interface, because on insert/update they are passed to the database as serialized strings (e.g. `JSON.stringify(...)`). Example: `automatic_data_pm?: IAutomaticDataPm | string`.
 - **Split model interfaces**: e.g. `IWorkingPlanRecord` (table only) and `IWorkingPlanExtended extends IWorkingPlanRecord` (adds `users?`). In controllers use optional chaining: `workingPlan.users?.map(...) ?? []`.
 - **Callbacks**: When mapping over arrays with mixed types, type the callback parameter to accept the source type; use `Buffer | string` when a value can be either.
+- **No `unknown` cast chains**: Do not use `as unknown as ...` to silence type errors. Fix typing at the source (interfaces, function generics, or explicit runtime guards).
+- **No broad `Record<string, any>` workarounds**: Avoid generic catch-all types to bypass typing. Prefer concrete model interfaces and narrow, explicit types.
 
 ### Validation (TypeScript)
 - Use **`_.isNil(variable)`** for null/undefined; **`_.isArray(x)`** when a value must be an array (e.g. `if (_.isNil(numbers) || !_.isArray(numbers) || numbers.length === 0)`).
@@ -121,6 +124,7 @@ Source lives under **src/**; no **app/**.
   - **Array of related records:** Use `COALESCE((SELECT json_agg(row_to_json(alias)) FROM table alias WHERE ...), '[]'::json) AS column_name` so the row has one column with an array of full records. Type it (e.g. `choices: ITicketQuestionChoiceRecord[]`). Do **not** return only IDs when you need full records; use `json_agg(row_to_json(...))` for arrays.
   - Define and use `I*Record` interfaces for each table involved.
 - **No unnecessary variables:** Do not introduce intermediate variables when the value is used only once (e.g. use `${filterTree.getWhere(false)}` directly in the SQL template, not `const treeWhere = ...`).
+- **Insert/update typing must match table interface:** For `pgConnection.insert<T>` / `updateByKey`, use the table `I*Record` interface as generic `T`. If a property used by code is missing from `I*Record`, add it to the interface (the interface is the source of truth for table columns), do not bypass with casts.
 - **PgFilter (common-mjs)** — use one filter per query and build the WHERE via the filter API:
   - **One filter per query:** Use a **single** PgFilter per query. Add all conditions (status, visibility, custom clauses) to that filter with `addEqual`, `addNotEqual`, `addCondition`, etc. Use **one** `getWhere(...)` in the SQL and **one** `replacements`. Do **not** combine two filters with `AND` in the SQL (e.g. `WHERE ${filterA.getWhere(false)} AND ${filterB.getWhere(false)}`). Using two (or more) filters only makes sense when you have **complex conditions combined with OR**; otherwise fold every condition into the same filter.
   - **WHERE in the filter (preferred):** When the **only** conditions come from the filter, put the WHERE in the filter: write **`FROM table ${filter.getWhere()}`** (no `WHERE` in the template). The filter then outputs `WHERE cond` and the SQL is valid. Avoid writing `WHERE ${filter.getWhere()}` — that produces `WHERE WHERE cond` and a syntax error.
