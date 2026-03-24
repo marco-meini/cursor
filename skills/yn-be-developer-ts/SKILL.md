@@ -87,6 +87,7 @@ Source lives under **src/**; no **app/**.
 - **Callbacks**: When mapping over arrays with mixed types, type the callback parameter to accept the source type; use `Buffer | string` when a value can be either.
 - **No `unknown` cast chains**: Do not use `as unknown as ...` to silence type errors. Fix typing at the source (interfaces, function generics, or explicit runtime guards).
 - **No broad `Record<string, any>` workarounds**: Avoid generic catch-all types to bypass typing. Prefer concrete model interfaces and narrow, explicit types.
+- **No typing-only object rebuilding**: Do not rebuild DB entities field-by-field just to satisfy TypeScript. Prefer clean source typing first (e.g. `insert<I*Record>(...)`) and use the returned object directly when behavior is unchanged.
 
 ### Validation (TypeScript)
 - Use **`_.isNil(variable)`** for null/undefined; **`_.isArray(x)`** when a value must be an array (e.g. `if (_.isNil(numbers) || !_.isArray(numbers) || numbers.length === 0)`).
