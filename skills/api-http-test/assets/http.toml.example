@@ -1,0 +1,15 @@
+[configuration]
+schema_version = "1.0.0"
+
+[http]
+base_url = "http://localhost:3000"
+timeout_ms = 15000
+auth_mode = "auto"
+
+[http.local]
+description = "local profile"
+auth_mode = "auto"
+
+[headers.default]
+Accept = "application/json"
+Content-Type = "application/json"

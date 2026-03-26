@@ -1,0 +1,3 @@
+display_name: API HTTP Test
+short_description: Real HTTP API testing with TOML auth profiles
+default_prompt: Test API endpoints with real HTTP calls, initialize config with /api-http-test install when missing, and use project-scoped TOML profiles.
