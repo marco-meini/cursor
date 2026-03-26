@@ -16,6 +16,8 @@ auth_mode = "auto"
 [http.local]
 description = "local profile"
 auth_mode = "bearer"
+cookie_jar_enabled = true
+cookie_jar_file = "local.cookies.json"
 auth_header_name = "Authorization"
 auth_scheme = "Bearer"
 auth_login_url = "/auth/login"
@@ -40,6 +42,9 @@ Content-Type = "application/json"
 - `[http.<profile>]`
   - Per-environment overrides and auth credentials.
   - Suggested profiles: `local`, `staging`, `prod`.
+  - Cookie session support:
+    - `cookie_jar_enabled` (bool, default `true`)
+    - `cookie_jar_file` (string, default `<profile>.cookies.json`, stored in `.skills/api-http-test/.cookies/`)
 - `[headers.default]`
   - Map of default headers applied to each request.
 
@@ -55,3 +60,4 @@ Content-Type = "application/json"
 ## Security
 - Keep the TOML gitignored.
 - Avoid storing production secrets in plain text when possible.
+- Cookie jar files may contain session tokens; keep `.skills/api-http-test/.cookies/` gitignored.

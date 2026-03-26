@@ -41,15 +41,52 @@ def parse_headers(header_lines: list[str]) -> dict[str, str]:
     return headers
 
 
+def parse_set_cookie_values(set_cookie_headers: list[str]) -> dict[str, str]:
+    jar: dict[str, str] = {}
+    for raw in set_cookie_headers:
+        first = raw.split(";", 1)[0].strip()
+        if "=" not in first:
+            continue
+        name, value = first.split("=", 1)
+        name = name.strip()
+        value = value.strip()
+        if name:
+            jar[name] = value
+    return jar
+
+
+def load_cookie_jar(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    out: dict[str, str] = {}
+    for k, v in data.items():
+        if isinstance(k, str) and isinstance(v, str):
+            out[k] = v
+    return out
+
+
+def save_cookie_jar(path: Path, jar: dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(jar, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+
 def call_http(url: str, method: str, headers: dict[str, str], body: bytes | None, timeout_s: float):
     req = urllib.request.Request(url=url, data=body, method=method.upper())
     for key, value in headers.items():
         req.add_header(key, value)
     try:
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            return resp.getcode(), dict(resp.headers.items()), resp.read()
+            set_cookies = resp.headers.get_all("Set-Cookie") or []
+            return resp.getcode(), dict(resp.headers.items()), set_cookies, resp.read()
     except urllib.error.HTTPError as exc:
-        return exc.code, dict(exc.headers.items()) if exc.headers else {}, exc.read()
+        set_cookies = exc.headers.get_all("Set-Cookie") if exc.headers else []
+        return exc.code, dict(exc.headers.items()) if exc.headers else {}, set_cookies or [], exc.read()
 
 
 def get_token_from_login(base_url: str, profile: dict, timeout_s: float) -> str:
@@ -67,7 +104,7 @@ def get_token_from_login(base_url: str, profile: dict, timeout_s: float) -> str:
     payload = json.dumps({user_field: username, pass_field: password}).encode("utf-8")
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
     url = build_url(base_url, login_url, None)
-    status, _, raw_body = call_http(url, method, headers, payload, timeout_s)
+    status, _, _, raw_body = call_http(url, method, headers, payload, timeout_s)
     if status >= 400:
         raise RuntimeError(f"Login flow failed with status {status}")
     data = json.loads(raw_body.decode("utf-8") or "{}")
@@ -114,6 +151,9 @@ if not base_url:
 timeout_ms = int(args.timeout_ms or http_root.get("timeout_ms", 15000))
 timeout_s = timeout_ms / 1000.0
 auth_mode = str(profile_cfg.get("auth_mode") or http_root.get("auth_mode", "auto")).lower()
+cookie_jar_enabled = bool(profile_cfg.get("cookie_jar_enabled", True))
+cookie_jar_name = str(profile_cfg.get("cookie_jar_file", f"{args.profile}.cookies.json"))
+cookie_jar_path = project_root / ".skills" / "api-http-test" / ".cookies" / cookie_jar_name
 
 defaults = doc.get("headers", {}).get("default", {})
 headers = {str(k): str(v) for k, v in defaults.items()} if isinstance(defaults, dict) else {}
@@ -167,16 +207,36 @@ elif auth_mode == "api_key":
 elif auth_mode != "none":
     raise SystemExit(f"Unsupported auth_mode '{auth_mode}'")
 
+jar_cookies: dict[str, str] = {}
+if cookie_jar_enabled:
+    jar_cookies = load_cookie_jar(cookie_jar_path)
+    if "Cookie" not in headers and jar_cookies:
+        headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in jar_cookies.items())
+
 url = build_url(base_url, args.path, args.query)
-status, response_headers, response_body = call_http(url, args.method, headers, body_bytes, timeout_s)
+status, response_headers, set_cookie_headers, response_body = call_http(url, args.method, headers, body_bytes, timeout_s)
+
+saved_count = 0
+if cookie_jar_enabled and set_cookie_headers:
+    new_values = parse_set_cookie_values(set_cookie_headers)
+    if new_values:
+        jar_cookies.update(new_values)
+        save_cookie_jar(cookie_jar_path, jar_cookies)
+        saved_count = len(new_values)
 
 print(f"HTTP {status}")
 print(f"URL: {url}")
 print(f"Auth mode: {auth_mode}")
+if cookie_jar_enabled:
+    print(f"Cookie jar: {cookie_jar_path}")
+    print(f"Cookie updates: {saved_count}")
 if args.show_headers:
     print("Response headers:")
     for k, v in sorted(response_headers.items()):
-        print(f"- {k}: {v}")
+        if k.lower() == "set-cookie":
+            print(f"- {k}: <redacted>")
+        else:
+            print(f"- {k}: {v}")
 
 raw_text = response_body.decode("utf-8", errors="replace")
 print("Body:")

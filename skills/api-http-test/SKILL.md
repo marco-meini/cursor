@@ -36,6 +36,7 @@ Use this skill to run real HTTP requests with reusable project configuration and
 3) Execute request:
    - Use `run_http.sh` with profile selection (`HTTP_PROFILE` or `--profile`).
    - Support custom headers, query params, and raw/body-file payload.
+   - Persist session cookies from `Set-Cookie` and reuse them automatically on next requests.
 4) Report outcome:
    - Return status, URL, auth mode used, and response body.
 
@@ -47,6 +48,7 @@ Use this skill to run real HTTP requests with reusable project configuration and
 
 ## Security guardrails
 - Do not commit credentials; ensure `.skills/api-http-test/http.toml` is gitignored.
+- Do not commit cookie jars; ensure `.skills/api-http-test/.cookies/` is gitignored.
 - Mask secrets in explanations when reporting logs.
 - Use project-scoped config only for the target repository.
 

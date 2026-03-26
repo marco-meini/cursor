@@ -22,6 +22,9 @@ The expected skill UX is `/api-http-test install`, which should invoke the comma
 - `HTTP_PROFILE` defaults to `local`.
 - `--show-headers` prints response headers.
 - For bearer login flow, configure `auth_login_url`, user/password fields, and credentials.
+- Cookie session is automatic by default:
+  - `Set-Cookie` is persisted to `.skills/api-http-test/.cookies/<profile>.cookies.json`
+  - Next requests automatically send `Cookie` header from that jar (unless overridden manually)
 
 ## Common troubleshooting
 - Missing config:

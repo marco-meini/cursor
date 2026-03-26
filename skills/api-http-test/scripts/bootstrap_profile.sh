@@ -124,6 +124,8 @@ lines = [
     f"[http.{profile}]",
     f'description = "{profile} profile"',
     f'auth_mode = "{esc(profile_auth_mode)}"',
+    "cookie_jar_enabled = true",
+    f'cookie_jar_file = "{profile}.cookies.json"',
 ]
 
 def add_if(name: str, value: str) -> None:
