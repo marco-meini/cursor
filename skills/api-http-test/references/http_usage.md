@@ -17,6 +17,18 @@ The expected skill UX is `/api-http-test install`, which should invoke the comma
 - Read body from file:
   - `... api_http_test.sh request PUT /users/42 --body-file ./payload.json`
 
+## Use docs/OpenAPI as source of truth
+- If `<project-root>/docs/` exists with YAML OpenAPI fragments, resolve requests from docs first:
+  - method (`get`/`post`/...)
+  - full path (including base prefix like `/api/v2`)
+  - required path/query parameters
+- Recommended flow before request:
+  - locate endpoint in docs YAML
+  - copy exact method+path
+  - pass required query/path params with `--query` or path substitutions
+- Example:
+  - docs says `GET /api/v2/users/{id}` -> run `... request GET /api/v2/users/1`
+
 ## Notes
 - `--path` can be absolute URL or relative to `http.base_url`.
 - `HTTP_PROFILE` defaults to `local`.

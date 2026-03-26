@@ -12,6 +12,7 @@ schema_version = "1.0.0"
 base_url = "http://localhost:3000"
 timeout_ms = 15000
 auth_mode = "auto"
+docs_dir = "docs"
 
 [http.local]
 description = "local profile"
@@ -39,6 +40,7 @@ Content-Type = "application/json"
   - `base_url` (string): API base URL.
   - `timeout_ms` (int): request timeout in milliseconds.
   - `auth_mode` (string): default auth mode (`auto|bearer|basic|api_key|none`).
+  - `docs_dir` (string, optional, default `docs`): OpenAPI docs folder relative to project root.
 - `[http.<profile>]`
   - Per-environment overrides and auth credentials.
   - Suggested profiles: `local`, `staging`, `prod`.

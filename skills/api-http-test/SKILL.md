@@ -33,16 +33,21 @@ Use this skill to run real HTTP requests with reusable project configuration and
 2) Resolve auth mode:
    - Prefer autodetect suggestion during bootstrap.
    - If unclear, use explicit `auth_mode` in TOML (`bearer|basic|api_key|none`).
-3) Execute request:
+3) Resolve endpoint from docs when available:
+   - If `<project-root>/docs/` exists and contains OpenAPI YAML files, treat them as source of truth for method/path/params.
+   - Use documented path prefix and required params exactly as defined in YAML.
+   - Only fallback to controller-derived routes when docs are missing or clearly stale.
+4) Execute request:
    - Use `run_http.sh` with profile selection (`HTTP_PROFILE` or `--profile`).
    - Support custom headers, query params, and raw/body-file payload.
    - Persist session cookies from `Set-Cookie` and reuse them automatically on next requests.
-4) Report outcome:
+5) Report outcome:
    - Return status, URL, auth mode used, and response body.
 
 ## Trigger rules (summary)
 - If user explicitly asks to initialize config or says install, run bootstrap flow.
 - If user asks to run/test an endpoint realistically, use `run_http.sh`.
+- If `docs/` OpenAPI YAML exists, read docs first and build the request from documented method/path.
 - If auth errors occur (401/403), verify profile auth fields and re-run.
 - If no profile is specified and multiple are present, ask user which profile to use.
 
