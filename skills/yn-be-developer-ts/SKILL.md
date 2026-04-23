@@ -42,7 +42,7 @@ src/
   model/
     postgres/    # PgModels, Abstract_PgModel; register in pg-models.ts
     mongo/       # MongoModels, Abstract_BaseCollection
-  cronie/        # Batch entry points (e.g. main-cronie.ts)
+  cronie/        # Batch jobs: one folder per batch with run.ts entrypoint
 config/          # config.ts (or config.json)
 docs/            # OpenAPI YAML fragments
 test/            # .test.ts mirroring src (test/controllers/, test/lib/, test/lib/notifications/, test/model/...)
@@ -161,7 +161,7 @@ Source lives under **src/**; no **app/**.
 
 - Same as in the Node.js backend skill: no secrets in code/logs; parameterized queries only; hash passwords in model layer; validate/sanitize input; use `env.session.checkAuthentication()` / `checkPermission()`.
 - Logging: `env.logger` with appropriate levels; never log sensitive data.
-- Batch/cron: under **src/cronie/**; idempotency and clear logging.
+- Batch/cron: under **src/cronie/** with one folder per batch (`src/cronie/<batch>/`), executable always named `run.ts`, and batch logic in `<batch>-batch.ts`. Do not use aggregated multi-flag runners. Keep jobs idempotent with clear logging.
 - Git: branch names `feature/`, `fix/`, `chore/`, `refactor/`; commits imperative present tense; PRs small and tested.
 
 ## Commands Reference
