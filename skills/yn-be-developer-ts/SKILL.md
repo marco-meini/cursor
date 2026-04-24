@@ -56,6 +56,7 @@ Source lives under **src/**; no **app/**.
 - **Private methods without `__`**: e.g. `login`, `getNations`, `getAssociations`. In tests call via **`(controller as any).methodName(...)`**
 - Flow: try/catch → validate (early return with `HttpResponseStatus`) → `env.pgConnection` / `env.pgModels` → shape response
 - Use **ExpressMiddlewares**: `validIntegerPathParam('<param>')`, `parsePaginationParams(required)`, `validIntegerQueryParam('<param>', required?)`. Middleware sets **`res.locals[param]`** (not always `res.locals.id`). Pagination offset = **(page - 1) * limit**.
+- **Middleware-first rule (mandatory):** For controller endpoints, parse/validate path and query params with middleware in route registration, then read normalized values from `res.locals` inside handlers. Do **not** parse numeric params manually in handler bodies (`parseInt(request.query...)`, `parseInt(request.params...)`) except when no suitable middleware exists yet.
 - **Path param IDs (integer):** Always use **`validIntegerPathParam('<param>')`** (or `validIntegerPathParam('<param>', HttpResponseStatus.NOT_FOUND)` when invalid id should return 404). In the handler, read the value from **`response.locals[param]`** (e.g. `response.locals.id`). Do **not** parse `request.params.id` (or other param names) manually in the handler.
 
 ### Data Layer
