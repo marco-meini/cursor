@@ -1,0 +1,81 @@
+ELEVENLABS — VOICE DESIGN
+=========================
+Percorso: Voices → My Voices → Add a new voice → Voice Design
+Modello: Voice Design v3
+Lingua interfaccia: italiano o inglese, il prompt sotto è in inglese
+  (ElevenLabs rende meglio i Voice Design prompt in inglese).
+
+NON usare Instant Voice Cloning su audio del film.
+La scena di YouTube è da "Non ci resta che piangere" (1984):
+il predicatore è interpretato da Peter Boom. Quell'audio è protetto
+da diritto d'autore e non va campionato né clonato.
+
+Quello che segue ricostruisce il TIPO vocale: banditore/predicatore
+itinerante da memento mori, voce da strada, formula gridata.
+Non è un clone dell'attore.
+
+
+PROMPT DA INCOLLARE IN VOICE DESIGN
+-----------------------------------
+
+Native Italian, italiano standard teatrale dell'Italia centrale
+(no Neapolitan comedy, no Northern singsong, no modern TV presenter).
+Male, 55–65. Broadcast quality.
+Persona: medieval street death-herald.
+Emotion: solemn, insistent, oracular.
+A dry outdoor crier, not a church homily and not a movie-trailer bass.
+Mid-to-low baritone, slightly nasal, throat a little worn from shouting,
+thin rasp on open vowels as if dust sits in the larynx.
+Forward-projected, over-articulated, ritual cadence of a public warning.
+He punches the imperative, rushes the middle slightly, and lands the last
+word as the blow. No warmth, no smile, no kindness, no whisper.
+Close, dry, studio-clean signal.
+
+
+TESTO DI PREVIEW (scegline UNO, poi genera 3 voci e salva la più secca)
+----------------------------------------------------------------------
+Preview A — per agganciare la cadenza della formula classica:
+
+Ricordati che devi morire.
+
+Preview B — già sulla battuta del video allegorico:
+
+Ricordati che ti sei ripurgato.
+
+Consiglio: genera prima con Preview A, ascolta le 3 opzioni, salva
+quella più "da banditore" (secca, insistente, non da doppiaggio).
+Poi usa quella voce salvata sullo script del file 02.
+
+
+IMPOSTAZIONI CONSIGLIATE IN FASE DI DESIGN
+------------------------------------------
+- Guidance / prompt fidelity: alta (8–12 se c'è lo slider)
+- Se la voce esce troppo calda o da attore di prosa: rigenera
+  aggiungendo in coda al prompt: "thinner, drier, more nasal, less warm."
+- Se esce troppo da trailer Hollywood: aggiungi
+  "not cinematic boom, not bass-heavy, street-projected mid voice."
+- Se esce da prete in chiesa: aggiungi
+  "outdoor town crier, dry, no sanctuary warmth."
+
+
+RIFERIMENTO ACUSTICO (da ascoltare, non da clonare)
+---------------------------------------------------
+https://www.youtube.com/watch?v=zWSOmjtxo0c
+Clip: "Non ci resta che piangere - Ricordati che devi morire"
+
+Tratti da imitare a orecchio:
+- è un URLO di piazza, breve, ripetuto tre volte
+- non è un basso da coro: è un medio-grave da gola
+- le parole sono spaccate, quasi scandite da banditore
+- l'ultima parola ("morire") è il colpo, un po' allungata
+- c'è insistenza da formula rituale, non rabbia personale
+- voce un po' metallica/nasale, come chi parla all'aperto
+- tre ripetizioni: 1) annuncio  2) più lento, da spiegazione
+  3) di nuovo a piena voce, da "non hai capito"
+
+Mappa della frase originale (solo per la cadenza):
+
+  ri-cor-DÀ-ti     che     DÈ-vi     mo-RÌ-re
+  |  comando  |    |  ponte rapido |  |  colpo finale  |
+
+Picco di intensità su DÀ e su RÌ. Caduta breve sulla sillaba finale.

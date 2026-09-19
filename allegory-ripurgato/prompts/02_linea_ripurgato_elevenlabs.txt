@@ -1,0 +1,107 @@
+ELEVENLABS — BATTUTA DA GENERARE
+================================
+Voce: quella salvata da Voice Design (file 01)
+Modello: Eleven v3  (serve per gli audio tag)
+Lingua: Italian
+Stabilità: media-bassa (più recitazione, meno "letto")
+Similarity: alta
+Speaker boost: on se disponibile
+
+
+MELODIA DA COPIARE (stessa intonazione della formula classica)
+--------------------------------------------------------------
+Originale, solo come spartito ritmico:
+
+  Ri-cor-DÀ-ti   | che DÈ-vi | mo- RÌ -re
+  4 tempi        | 2 tempi   | 3 tempi, picco sul 2°
+
+Nuova battuta, stessa curva:
+
+  Ri-cor-DÀ-ti   | che ti SÈI | ri-pur- GÀ -to
+  4 tempi        | 2 tempi    | 4 tempi compressi, picco sul 3°
+
+Come mapparla:
+- "Ricordati" identico: urlo di comando, accento su DÀ
+- "che ti sei" va detto VELOCE e basso, come "che devi"
+  (non staccare "ti" e "sei", è un solo ponte)
+- "ripurgato" è il colpo al posto di "morire":
+  "ri-pur" scivola, "GÀ" è il picco tenuto, "-to" cade e si spegne
+
+Sillabe con durata relativa (1 = breve, 3 = tenuto):
+
+  Ri(1) cor(1) DÀ(2) ti(1)   che(1) ti(0.5) SÈI(1.5)   ri(1) pur(1) GÀ(3) to(1)
+
+
+TESTO DA INCOLLARE IN TTS (v3) — versione per il video
+------------------------------------------------------
+Usa ESATTAMENTE questo blocco, a capo compresi:
+
+[clears throat]
+[shouts] Ricordàti... che ti sei ripurgàto.
+[short pause]
+[slower] Ricordàti... [short pause] che ti sei... ripurgàto.
+[short pause]
+[shouts] Ricordàti che ti SEI... ripurGÀto.
+
+
+VARIANTI SE LA LETTURA NON CALZA
+--------------------------------
+1) Troppo da telegiornale, poco urlata:
+
+[town crier] [shouts] RICORDATI che ti sei ripurgato!
+
+2) Più rituale, da formula ripetuta tre volte (come la scena):
+
+[shouts] Ricordati che ti sei ripurgato.
+[pause]
+[slower] [enunciating] Ricordati... che ti sei ripurgato.
+[pause]
+[shouts] [insistent] Ricordati che ti sei ripurgato.
+
+3) Se "ripurgato" viene pronunciato male
+   (rischio: ri-PÙR-ga-to oppure inglese "purged"):
+   usa la grafia fonetica italiana con accento:
+
+[shouts] Ricordati che ti sei ripurgàto.
+
+   oppure spezza:
+
+[shouts] Ricordati che ti sei... ri-pur-gà-to.
+
+4) Se allunga troppo "ripurgato" e perde il colpo di "morire":
+   tieni "ripurgato" attaccato, accento solo sulla A:
+
+Ricordati che ti sei ripurGAto.
+
+5) Versione secca, una sola enunciazione (per stacco del cartello):
+
+[solemn] [shouts] Ricordàti che ti sei ripurgàto.
+
+
+PRONUNCIA DI CONTROLLO
+----------------------
+IPA approssimata:
+
+  ri.korˈda.ti ke ti ˈsɛi ri.purˈɡa.to
+
+NON dire:
+  - ri-pùr-gato (accento sbagliato)
+  - ripurgàto con la U inglese
+  - "ripurgato" da ufficio, piatto
+  - "ricordati" affettuoso o da mamma
+
+SÌ:
+  - italiano da piazza, consonanti dure
+  - R vibrata
+  - A di "ripurgàto" aperta, tenuta un attimo
+  - chiusura secca sulla O finale, come la E di "morire"
+
+
+PARAMETRI DI EXPORT
+-------------------
+Formato: wav 48 kHz o mp3 192+
+Una take per ogni ripetizione se vuoi mixarle sul video
+poi sostituisci il file
+  allegory-ripurgato/audio/voce_placeholder.mp3
+e rilancia:
+  bash allegory-ripurgato/scripts/build_video.sh

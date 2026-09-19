@@ -1,0 +1,6 @@
+video/clips/
+video/picture_silent.mp4
+audio/sil_*.wav
+audio/voce_concat.txt
+__pycache__/
+*.pyc
