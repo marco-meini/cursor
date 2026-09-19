@@ -1,0 +1,98 @@
+ELEVENLABS — BATTUTA DA GENERARE (CRESCENDO)
+============================================
+Voce: Savonarola (quella già salvata)
+Modello: Eleven v3
+Lingua: Italian
+Speed: 100
+Stability: 30–40   (scendi da 50: serve più dinamica tra le 3 ripetizioni)
+Speaker boost: 75–85
+Style / exaggeration: alta, se c'è lo slider
+
+
+PERCHÉ LA TAKE PRECEDENTE NON CRESCEVA
+--------------------------------------
+Take: ElevenLabs_2026-09-19T16_15_55_Savonarola_gen_sp100_s50_sb75_v3
+Picchi misurati:
+  1ª  [shouts]   ~ -5 dB   ← già urlata
+  2ª  [slower]   ~ -14 dB  ← la più debole
+  3ª  [shouts]   ~ -7 dB   ← più forte della 2ª, più debole della 1ª
+
+Curva attuale: FORTE → piano → medio.
+Curva voluta:  chiamata → più forte → quasi urlo.
+
+Non mettere [shouts] sulla prima riga: v3 parte già al massimo
+e poi non ha più dove salire.
+
+
+TESTO DA INCOLLARE ADESSO (v3)
+------------------------------
+Copia ESATTAMENTE questo blocco, a capo compresi:
+
+[building intensity with each repetition]
+[calling out] [projected] Ricordati che ti sei ripurgàto.
+[short pause]
+[louder] [raising his voice] [shouts] Ricordati che ti sei ripurgàto.
+[short pause]
+[screaming] [yelling at full throat] [strained] RICORDATI CHE TI SEI RIPURGÀTO!!!
+
+
+SE L'ULTIMA NON È ABBASTANZA URLATA
+-----------------------------------
+Variante A — tutto maiuscolo e spezzata, come il terzo colpo della scena:
+
+[calling out] Ricordati che ti sei ripurgàto.
+[pause]
+[shouts] Ricordati che ti sei ripurgàto!
+[pause]
+[screaming] [angry] [from the gut] RICORDÀTI... CHE TI SEI... RIPURGÀTO!!!
+
+Variante B — direzione esplicita in testa:
+
+[each line louder than the last, ending in a raw scream]
+[firm street preacher] Ricordati che ti sei ripurgàto.
+[short pause]
+[shouts] Ricordati che ti sei ripurgàto!
+[short pause]
+[screaming] RICORDATI CHE TI SEI RIPURGÀTO!!!
+
+Variante C — se v3 legge i tag in inglese come parole,
+tieni solo questi tre, senza prosa lunga:
+
+[projected] Ricordati che ti sei ripurgàto.
+[shouts] Ricordati che ti sei ripurgàto!
+[screaming] RICORDATI CHE TI SEI RIPURGÀTO!!!
+
+
+SPARTITO DEL CRESCENDO
+----------------------
+1ª  chiamata da piazza, petto, non gola
+    volume 6/10    "sto avvisando chi passa"
+
+2ª  stesso testo, un palmo più alta, più aria
+    volume 8/10    "non hai sentito"
+
+3ª  urlo di banditore, gola aperta, quasi rotta
+    volume 10/10   il colpo cade su RIPURGÀTO
+    spezza: RI-COR-DÀ-TI / CHE TI SEI / RI-PUR-GÀ-TO
+    la A di GÀ tenuta, poi la O che si spegne
+
+Non alzare lo Speed sopra 100 sull'ultima: l'urlo deve
+allargarsi, non accelerare.
+
+
+MELODIA (invariata)
+-------------------
+  Ri-cor-DÀ-ti   | che ti SÈI | ri-pur- GÀ -to
+  comando        | ponte rapido | colpo finale
+
+Pronuncia: ri.korˈda.ti ke ti ˈsɛi ri.purˈɡa.to
+
+
+PARAMETRI DI EXPORT
+-------------------
+wav 48 kHz (o mp3 192+)
+Salva come:
+  allegory-ripurgato/audio/voce_elevenlabs.wav
+poi:
+
+  python3 allegory-ripurgato/scripts/build_video.py

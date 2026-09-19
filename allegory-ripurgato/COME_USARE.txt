@@ -1,0 +1,48 @@
+Video allegorico + prompt voce
+==============================
+
+Cosa c'è
+--------
+prompts/01_voice_design_elevenlabs.txt
+  Prompt da incollare in ElevenLabs Voice Design.
+
+prompts/02_linea_ripurgato_elevenlabs.txt
+  Script TTS (modello Eleven v3) per dire
+  "Ricordati che ti sei ripurgato" con la stessa
+  intonazione da banditore della formula classica.
+
+prompts/03_storyboard_allegoria.txt
+  Senso allegorico e ordine delle inquadrature.
+
+video/ricordati_che_ti_sei_ripurgato.mp4
+  Corto montato da fotogrammi originali.
+  La voce nel file è un PLACEHOLDER (Microsoft Neural),
+  da sostituire con la take ElevenLabs.
+
+Perché non c'è l'audio del film
+-------------------------------
+Il clip https://www.youtube.com/watch?v=zWSOmjtxo0c
+è una scena di "Non ci resta che piangere" (1984).
+Estrarre quell'audio per campionarlo o clonarlo
+sarebbe uso di una interpretazione protetta.
+ElevenLabs va usato in Voice Design (descrizione),
+non in Instant Voice Cloning su quel file.
+
+
+Come creare la voce su ElevenLabs
+---------------------------------
+1. Voices → My Voices → Add a new voice → Voice Design
+2. Incolla il prompt del file 01
+3. Preview text: "Ricordati che devi morire."
+4. Genera, scegli la take più secca e da piazza, salva
+5. Text to Speech, modello Eleven v3
+6. Incolla lo script del file 02
+7. Esporta wav in
+   allegory-ripurgato/audio/voce_elevenlabs.wav
+8. Rigenera il video:
+
+   python3 allegory-ripurgato/scripts/build_video.py
+
+   Lo script usa voce_elevenlabs.wav se c'è, altrimenti
+   il placeholder già mixato. Per rifare il placeholder:
+   python3 allegory-ripurgato/scripts/build_video.py --refresh-voice

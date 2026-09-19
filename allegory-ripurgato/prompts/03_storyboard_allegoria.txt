@@ -1,0 +1,48 @@
+VIDEO ALLEGORICO — "Ricordati che ti sei ripurgato"
+==================================================
+Riferimento di scena (da NON ricopiare in inquadratura):
+https://www.youtube.com/watch?v=zWSOmjtxo0c
+"Non ci resta che piangere" (1984), predicatore e formula del memento mori.
+
+Questa è un'allegoria originale, non un remake.
+Stesso gesto (banditore + teschio + formula ripetuta),
+senso invertito: non "dovrai morire" ma "sei già passato dal fuoco".
+
+
+ALLEGORIA
+---------
+Il memento mori cristiano ("ricordati che devi morire")
+diventa un memento de purgatione:
+la morte non è più davanti, è alle spalle.
+Il teschio, da vanitas sporca di terra, si fa reliquia pulita.
+La cenere sale invece di cadere: il Purgatorio è compiuto.
+Chi ascolta non deve segnarsi la morte in agenda.
+Deve ricordare di essere già stato ripurgato.
+
+
+PERSONAGGIO
+-----------
+Il Nunzio: banditore della soglia, non un attore esistente.
+Abito di lana bruna infangato, cappuccio, teschio in mano.
+Voce da piazza (prompt ElevenLabs nei file 01 e 02).
+
+
+MONTATO
+-------
+00  vicolo vuoto          silenzio, vento, un rintocco lontano
+02  il Nunzio arriva      passo, polvere
+01  ritratto + teschio    prima enunciazione
+03  teschio di cenere     "che ti sei"
+04  proclama              seconda enunciazione, più lenta
+05  fuoco di purgatorio   la formula si rovescia
+06  la cenere sale        terza enunciazione, piena
+07  sguardo               la voce cade
+08  cartello              solo il titolo
+
+
+BATTUTA IN PICTURE
+------------------
+[1] Ricordati che ti sei ripurgato.
+[2] Ricordati... che ti sei ripurgato.
+[3] Ricordati che ti sei ripurgato.
+Cartello: RICORDATI CHE TI SEI RIPURGATO
