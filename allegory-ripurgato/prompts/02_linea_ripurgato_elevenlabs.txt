@@ -1,107 +1,98 @@
-ELEVENLABS — BATTUTA DA GENERARE
-================================
-Voce: quella salvata da Voice Design (file 01)
-Modello: Eleven v3  (serve per gli audio tag)
+ELEVENLABS — BATTUTA DA GENERARE (CRESCENDO)
+============================================
+Voce: Savonarola (quella già salvata)
+Modello: Eleven v3
 Lingua: Italian
-Stabilità: media-bassa (più recitazione, meno "letto")
-Similarity: alta
-Speaker boost: on se disponibile
+Speed: 100
+Stability: 30–40   (scendi da 50: serve più dinamica tra le 3 ripetizioni)
+Speaker boost: 75–85
+Style / exaggeration: alta, se c'è lo slider
 
 
-MELODIA DA COPIARE (stessa intonazione della formula classica)
---------------------------------------------------------------
-Originale, solo come spartito ritmico:
+PERCHÉ LA TAKE PRECEDENTE NON CRESCEVA
+--------------------------------------
+Take: ElevenLabs_2026-09-19T16_15_55_Savonarola_gen_sp100_s50_sb75_v3
+Picchi misurati:
+  1ª  [shouts]   ~ -5 dB   ← già urlata
+  2ª  [slower]   ~ -14 dB  ← la più debole
+  3ª  [shouts]   ~ -7 dB   ← più forte della 2ª, più debole della 1ª
 
-  Ri-cor-DÀ-ti   | che DÈ-vi | mo- RÌ -re
-  4 tempi        | 2 tempi   | 3 tempi, picco sul 2°
+Curva attuale: FORTE → piano → medio.
+Curva voluta:  chiamata → più forte → quasi urlo.
 
-Nuova battuta, stessa curva:
-
-  Ri-cor-DÀ-ti   | che ti SÈI | ri-pur- GÀ -to
-  4 tempi        | 2 tempi    | 4 tempi compressi, picco sul 3°
-
-Come mapparla:
-- "Ricordati" identico: urlo di comando, accento su DÀ
-- "che ti sei" va detto VELOCE e basso, come "che devi"
-  (non staccare "ti" e "sei", è un solo ponte)
-- "ripurgato" è il colpo al posto di "morire":
-  "ri-pur" scivola, "GÀ" è il picco tenuto, "-to" cade e si spegne
-
-Sillabe con durata relativa (1 = breve, 3 = tenuto):
-
-  Ri(1) cor(1) DÀ(2) ti(1)   che(1) ti(0.5) SÈI(1.5)   ri(1) pur(1) GÀ(3) to(1)
+Non mettere [shouts] sulla prima riga: v3 parte già al massimo
+e poi non ha più dove salire.
 
 
-TESTO DA INCOLLARE IN TTS (v3) — versione per il video
-------------------------------------------------------
-Usa ESATTAMENTE questo blocco, a capo compresi:
+TESTO DA INCOLLARE ADESSO (v3)
+------------------------------
+Copia ESATTAMENTE questo blocco, a capo compresi:
 
-[clears throat]
-[shouts] Ricordàti... che ti sei ripurgàto.
+[building intensity with each repetition]
+[calling out] [projected] Ricordati che ti sei ripurgàto.
 [short pause]
-[slower] Ricordàti... [short pause] che ti sei... ripurgàto.
+[louder] [raising his voice] [shouts] Ricordati che ti sei ripurgàto.
 [short pause]
-[shouts] Ricordàti che ti SEI... ripurGÀto.
+[screaming] [yelling at full throat] [strained] RICORDATI CHE TI SEI RIPURGÀTO!!!
 
 
-VARIANTI SE LA LETTURA NON CALZA
---------------------------------
-1) Troppo da telegiornale, poco urlata:
+SE L'ULTIMA NON È ABBASTANZA URLATA
+-----------------------------------
+Variante A — tutto maiuscolo e spezzata, come il terzo colpo della scena:
 
-[town crier] [shouts] RICORDATI che ti sei ripurgato!
-
-2) Più rituale, da formula ripetuta tre volte (come la scena):
-
-[shouts] Ricordati che ti sei ripurgato.
+[calling out] Ricordati che ti sei ripurgàto.
 [pause]
-[slower] [enunciating] Ricordati... che ti sei ripurgato.
+[shouts] Ricordati che ti sei ripurgàto!
 [pause]
-[shouts] [insistent] Ricordati che ti sei ripurgato.
+[screaming] [angry] [from the gut] RICORDÀTI... CHE TI SEI... RIPURGÀTO!!!
 
-3) Se "ripurgato" viene pronunciato male
-   (rischio: ri-PÙR-ga-to oppure inglese "purged"):
-   usa la grafia fonetica italiana con accento:
+Variante B — direzione esplicita in testa:
 
-[shouts] Ricordati che ti sei ripurgàto.
+[each line louder than the last, ending in a raw scream]
+[firm street preacher] Ricordati che ti sei ripurgàto.
+[short pause]
+[shouts] Ricordati che ti sei ripurgàto!
+[short pause]
+[screaming] RICORDATI CHE TI SEI RIPURGÀTO!!!
 
-   oppure spezza:
+Variante C — se v3 legge i tag in inglese come parole,
+tieni solo questi tre, senza prosa lunga:
 
-[shouts] Ricordati che ti sei... ri-pur-gà-to.
-
-4) Se allunga troppo "ripurgato" e perde il colpo di "morire":
-   tieni "ripurgato" attaccato, accento solo sulla A:
-
-Ricordati che ti sei ripurGAto.
-
-5) Versione secca, una sola enunciazione (per stacco del cartello):
-
-[solemn] [shouts] Ricordàti che ti sei ripurgàto.
+[projected] Ricordati che ti sei ripurgàto.
+[shouts] Ricordati che ti sei ripurgàto!
+[screaming] RICORDATI CHE TI SEI RIPURGÀTO!!!
 
 
-PRONUNCIA DI CONTROLLO
+SPARTITO DEL CRESCENDO
 ----------------------
-IPA approssimata:
+1ª  chiamata da piazza, petto, non gola
+    volume 6/10    "sto avvisando chi passa"
 
-  ri.korˈda.ti ke ti ˈsɛi ri.purˈɡa.to
+2ª  stesso testo, un palmo più alta, più aria
+    volume 8/10    "non hai sentito"
 
-NON dire:
-  - ri-pùr-gato (accento sbagliato)
-  - ripurgàto con la U inglese
-  - "ripurgato" da ufficio, piatto
-  - "ricordati" affettuoso o da mamma
+3ª  urlo di banditore, gola aperta, quasi rotta
+    volume 10/10   il colpo cade su RIPURGÀTO
+    spezza: RI-COR-DÀ-TI / CHE TI SEI / RI-PUR-GÀ-TO
+    la A di GÀ tenuta, poi la O che si spegne
 
-SÌ:
-  - italiano da piazza, consonanti dure
-  - R vibrata
-  - A di "ripurgàto" aperta, tenuta un attimo
-  - chiusura secca sulla O finale, come la E di "morire"
+Non alzare lo Speed sopra 100 sull'ultima: l'urlo deve
+allargarsi, non accelerare.
+
+
+MELODIA (invariata)
+-------------------
+  Ri-cor-DÀ-ti   | che ti SÈI | ri-pur- GÀ -to
+  comando        | ponte rapido | colpo finale
+
+Pronuncia: ri.korˈda.ti ke ti ˈsɛi ri.purˈɡa.to
 
 
 PARAMETRI DI EXPORT
 -------------------
-Formato: wav 48 kHz o mp3 192+
-Una take per ogni ripetizione se vuoi mixarle sul video
-poi sostituisci il file
-  allegory-ripurgato/audio/voce_placeholder.mp3
-e rilancia:
-  bash allegory-ripurgato/scripts/build_video.sh
+wav 48 kHz (o mp3 192+)
+Salva come:
+  allegory-ripurgato/audio/voce_elevenlabs.wav
+poi:
+
+  python3 allegory-ripurgato/scripts/build_video.py
